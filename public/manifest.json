@@ -1,0 +1,17 @@
+{
+    "name": "Aonle Ludo App",
+    "short_name": "AoneLudo App",
+    "icons": [
+      {
+        "src": "/logo_ludo.webp",
+        "sizes": "300x300",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ],
+    "theme_color": "#FFFFFF",
+    "background_color": "#FFFFFF",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait"
+  }

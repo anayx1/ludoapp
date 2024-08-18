@@ -1,0 +1,36 @@
+.sec {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.rootDiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  width: 90%;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.lowerDiv {
+  background-color: black;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+}
+.upperDiv {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: 350px;
+  align-items: center;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 6.4px 14.4px 0 rgb(0 0 0 / 13%),
+    0 1.2px 3.6px 0 rgb(0 0 0 / 11%);
+}

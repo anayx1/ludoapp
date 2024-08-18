@@ -1,0 +1,103 @@
+.container {
+    max-width: 300px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  .topNotice, .bottomNotice, .lastNotice {
+    background-color: #FFE4E1;
+    padding: 8px;
+    font-size: 12px;
+    color: #FF0000;
+    text-align: center;
+  }
+  
+  .battleInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #FFF0F5;
+  }
+  
+  .playerInfo {
+    text-align: center;
+  }
+  
+  .avatar {
+    width: 50px;
+    height: 50px;
+    background-color: #D3D3D3;
+    border-radius: 50%;
+    margin: 0 auto 5px;
+  }
+  
+  .playerInfo p {
+    margin: 0;
+    font-size: 12px;
+  }
+  
+  .battleDetails {
+    text-align: center;
+  }
+  
+  .vs {
+    color: #FF0000;
+    font-size: 24px;
+    margin-bottom: -5px;
+  }
+  
+  .vsText {
+    color: #FF0000;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .amount {
+    background-color: #32CD32;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .roomCode {
+    padding: 10px 15px;
+    background-color: #FFF0F5;
+  }
+  
+  .roomCodeLabel {
+    color: #FF0000;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .waitingDots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .dot {
+    width: 6px;
+    height: 6px;
+    background-color: #A9A9A9;
+    border-radius: 50%;
+    margin-right: 3px;
+  }
+  
+  .waitingDots p {
+    margin: 0 0 0 5px;
+    color: #696969;
+    font-size: 12px;
+  }
+  
+  .bottomNotice, .lastNotice {
+    margin-top: 1px;
+  }
