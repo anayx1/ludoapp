@@ -330,7 +330,7 @@ const AddCash = () => {
                 color="primary"
                 onClick={handleSubmit}
                 fullWidth
-                style={{ marginTop: "16px",background:"black" }}
+                style={{ marginTop: "16px",background:"black",color:"white" }}
                 disabled={!amount || !screenshot || !utrId || isLoading}
               >
                 {isLoading ? (

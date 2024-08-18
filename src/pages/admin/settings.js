@@ -8,6 +8,7 @@ import {
   Grid,
   Button,
   Snackbar,
+  Input,
 } from "@mui/material";
 import Sidebar from "@/components/admin/AdminSidebar";
 
@@ -24,29 +25,23 @@ const SettingsPage = () => {
     whatsapp_number: "",
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [upiQrFile, setUpiQrFile] = useState(null);
 
   useEffect(() => {
     fetchAdminDetails();
   }, []);
 
   const toDecimal = (value) => {
-    // If value is already a number, use it directly
-    const num = typeof value === 'number' ? value : parseFloat(value);
-    
-    // Check if it's a valid number
+    const num = typeof value === "number" ? value : parseFloat(value);
     if (isNaN(num)) {
-      return value; // Return original value if not a valid number
+      return value;
     }
-    
-    // If it's an integer or has no decimal places, add .0
-    if (Number.isInteger(num) || !num.toString().includes('.')) {
+    if (Number.isInteger(num) || !num.toString().includes(".")) {
       return num.toFixed(1);
     }
-    
-    // If it already has decimal places, return as is
     return num.toString();
   };
-  
+
   const fetchAdminDetails = async () => {
     try {
       const response = await fetch(
@@ -66,17 +61,19 @@ const SettingsPage = () => {
           whatsapp_number: data.whatsapp_number,
         });
       } else {
-        // Handle error
         console.error("Failed to fetch admin details");
       }
     } catch (error) {
       console.error("Error fetching admin details:", error);
-      // Handle error (e.g., show a snackbar)
     }
   };
 
   const handleSettingChange = (setting) => (event) => {
     setSettings({ ...settings, [setting]: event.target.value });
+  };
+
+  const handleFileChange = (event) => {
+    setUpiQrFile(event.target.files[0]);
   };
 
   const updateSettings = async () => {
@@ -100,7 +97,7 @@ const SettingsPage = () => {
       );
       if (response.ok) {
         setSnackbar({ open: true, message: "Settings updated successfully" });
-        fetchAdminDetails(); // Refetch admin details after update
+        fetchAdminDetails();
       } else {
         setSnackbar({ open: true, message: "Failed to update settings" });
       }
@@ -112,17 +109,17 @@ const SettingsPage = () => {
 
   const handleUpdateUpi = async () => {
     try {
+      const formData = new FormData();
+      formData.append("upi_id", settings.upi_id);
+      if (upiQrFile) {
+        formData.append("upi_qr_image", upiQrFile);
+      }
+
       const response = await fetch(
         `https://ludotest.pythonanywhere.com/panel/update-upi/5/`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            upi_name: settings.upi_name,
-            upi_id: settings.upi_id,
-          }),
+          body: formData,
         }
       );
       if (response.ok) {
@@ -130,7 +127,7 @@ const SettingsPage = () => {
           open: true,
           message: "UPI details updated successfully",
         });
-        fetchAdminDetails(); // Refetch admin details after update
+        fetchAdminDetails();
       } else {
         setSnackbar({ open: true, message: "Failed to update UPI details" });
       }
@@ -159,7 +156,7 @@ const SettingsPage = () => {
           open: true,
           message: "WhatsApp number updated successfully",
         });
-        fetchAdminDetails(); // Refetch admin details after update
+        fetchAdminDetails();
       } else {
         setSnackbar({
           open: true,
@@ -240,10 +237,10 @@ const SettingsPage = () => {
               Update Settings
             </Button>
 
-            {/* UPI fields with update button */}
             <Paper variant="outlined" sx={{ p: 2, mt: 2, mb: 2 }}>
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                {/* Commented out UPI Name field */}
+                {/* <Grid item xs={6}>
                   <TextField
                     fullWidth
                     label="UPI Name"
@@ -251,8 +248,8 @@ const SettingsPage = () => {
                     onChange={handleSettingChange("upi_name")}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={6}>
+                </Grid> */}
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="UPI ID"
@@ -260,6 +257,17 @@ const SettingsPage = () => {
                     onChange={handleSettingChange("upi_id")}
                     margin="normal"
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <Input
+                    type="file"
+                    onChange={handleFileChange}
+                    fullWidth
+                    inputProps={{ accept: "image/*" }}
+                  />
+                  <Typography variant="caption" display="block" gutterBottom>
+                    Upload UPI QR Code Image
+                  </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Button
@@ -274,7 +282,6 @@ const SettingsPage = () => {
               </Grid>
             </Paper>
 
-            {/* WhatsApp field with update button */}
             <TextField
               fullWidth
               label="WhatsApp Number"

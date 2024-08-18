@@ -130,10 +130,11 @@ const WithdrawalsComponent = () => {
 
   const rows = useMemo(
     () =>
-      getTabData.map((withdrawal,index) => (
+      getTabData.map((withdrawal, index) => (
         <TableRow key={withdrawal.id}>
-          <TableCell>{index+1}</TableCell>
-          <TableCell>{withdrawal.wallet.user}</TableCell>
+          <TableCell>{index + 1}</TableCell>
+          <TableCell>{withdrawal.wallet.user.username}</TableCell>
+          <TableCell>{withdrawal.wallet.user.phone_number}</TableCell>
           <TableCell>{withdrawal.withdrawal_amount}</TableCell>
           <TableCell>
             {new Date(withdrawal.withdrawal_date).toLocaleString()}
@@ -174,8 +175,9 @@ const WithdrawalsComponent = () => {
           )}
         </TableRow>
       )),
-    [resetData, getTabData, withdrawalData]
+    [resetData, getTabData, withdrawalData, tabValue]
   );
+
   const renderDetailsModal = () => (
     <Modal
       open={modalOpen}
@@ -221,6 +223,18 @@ const WithdrawalsComponent = () => {
         </div>
         {selectedWithdrawal && (
           <List>
+            <ListItem>
+              <ListItemText
+                primary="Username"
+                secondary={selectedWithdrawal.wallet.user.username}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Mobile Number"
+                secondary={selectedWithdrawal.wallet.user.phone_number}
+              />
+            </ListItem>
             <ListItem>
               <ListItemText
                 primary="Withdrawal Amount"
@@ -314,8 +328,9 @@ const WithdrawalsComponent = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Sr No.</TableCell>
-                  <TableCell>User ID</TableCell>
-                  <TableCell>Amount</TableCell>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Mobile Number</TableCell>
+                  <TableCell>Amountt</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Status</TableCell>
                   {tabValue === 0 && <TableCell>Action</TableCell>}
@@ -323,11 +338,10 @@ const WithdrawalsComponent = () => {
               </TableHead>
               <TableBody>
                 {getTabData.length > 0 ? (
-                  // getTabData.map(renderTableRow)
                   rows
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={tabValue === 0 ? 6 : 5} align="center">
+                    <TableCell colSpan={tabValue === 0 ? 7 : 6} align="center">
                       No data
                     </TableCell>
                   </TableRow>

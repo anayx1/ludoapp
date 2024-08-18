@@ -79,14 +79,12 @@ const DepositComponent = () => {
   const getTabData = useMemo(() => {
     const filterData = (data) =>
       data.filter((item) => {
-        const userString =
-          (typeof item.wallet?.user === "string" ? item.wallet.user : "") ||
-          (typeof item.wallet?.user?.username === "string"
-            ? item.wallet.user.username
-            : "");
+        const userString = item.wallet.user.username;
+        const phoneNumber = item.wallet.user.phone_number;
         return (
           userString.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.id.toString().includes(searchTerm)
+          item.id.toString().includes(searchTerm) ||
+          phoneNumber.includes(searchTerm)
         );
       });
 
@@ -278,7 +276,8 @@ const DepositComponent = () => {
       return (
         <TableRow key={item.id}>
           <TableCell>{index + 1}</TableCell>
-          {/* <TableCell>{item.wallet.user}</TableCell> */}
+          <TableCell>{item.wallet.user.username}</TableCell>
+          <TableCell>{item.wallet.user.phone_number}</TableCell>
           <TableCell>{item.deposit_amount}</TableCell>
           <TableCell>{new Date(item.deposit_date).toLocaleString()}</TableCell>
           <TableCell>
@@ -358,7 +357,7 @@ const DepositComponent = () => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search..."
+            placeholder="Search by username, phone number, or ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ mt: 2, mb: 2 }}
@@ -379,7 +378,8 @@ const DepositComponent = () => {
                   ) : (
                     <>
                       <TableCell>S.No</TableCell>
-                      {/* <TableCell>User</TableCell> */}
+                      <TableCell>Username</TableCell>
+                      <TableCell>Phone Number</TableCell>
                       <TableCell>Amount</TableCell>
                       <TableCell>Date</TableCell>
                       <TableCell>Status</TableCell>
@@ -400,8 +400,8 @@ const DepositComponent = () => {
                         tabValue === 3 || tabValue === 4
                           ? 5
                           : tabValue === 0
-                          ? 8
-                          : 7
+                          ? 9
+                          : 8
                       }
                       align="center"
                     >
