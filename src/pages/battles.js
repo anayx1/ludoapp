@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+
 import axios from "axios";
 
 import {
@@ -232,6 +234,42 @@ const CreateBattle = () => {
     setSelectedBattle(battle);
     setJoinModalOpen(true);
   };
+  const handleStartBattle = async (battle) => {
+    const currentUserId = getUserIdFromSessionStorage();
+    if (!currentUserId) {
+      setError("User details not found. Please try logging in again.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${battle.challenge_id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to start room");
+      // }
+
+      const data = await response.json();
+       if (data.error)
+       {
+        setError(data.detail)
+       }
+      // console.log("Room started successfully:", data);
+      // setCreatedRoomId(data.room_id);
+      // handleCloseModal();
+      // window.location.reload();
+    } catch (error) {
+      console.error("Error starting room:", error);
+      setError(error.message);
+    }
+  };
 
   const handleJoinBattleConfirm = async () => {
     if (!selectedBattle) return;
@@ -368,21 +406,35 @@ const CreateBattle = () => {
         </Box>
       </Box>
       {getUserIdFromSessionStorage() === battle.created_by.id ? (
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => handleCancelBattle(battle.challenge_id)}
-        >
-          Cancel
-        </Button>
+        <>
+        <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+          
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleCancelBattle(battle.challenge_id)}
+            >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleStartBattle(battle)}
+            >
+            Start
+          </Button>
+            </div>
+        </>
       ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => handleJoinBattleClick(battle)}
-        >
-          Join
-        </Button>
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleJoinBattleClick(battle)}
+          >
+            Join
+          </Button>
+        </>
       )}
     </Paper>
   );

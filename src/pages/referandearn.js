@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Paper } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Alert,
+  Snackbar,
+} from "@mui/material";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 
 const ReferAndEarn = () => {
   const [referralCode, setReferralCode] = useState("");
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     // Fetch user data from session storage
@@ -16,15 +26,20 @@ const ReferAndEarn = () => {
     }
   }, []);
 
+  const showAlert = (message) => {
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
+
   const copyCode = () => {
     navigator.clipboard.writeText(referralCode);
-    // You might want to add a snackbar or toast notification here
+    showAlert("Referral code copied to clipboard!");
   };
 
   const copyLink = () => {
     const link = `https://aoneludo.com/register?ref=${referralCode}`;
     navigator.clipboard.writeText(link);
-    // You might want to add a snackbar or toast notification here
+    showAlert("Referral link copied to clipboard!");
   };
 
   const shareWhatsApp = () => {
@@ -37,7 +52,7 @@ const ReferAndEarn = () => {
 
   return (
     <>
-    <Sidebar/>
+      <Sidebar />
       <Paper elevation={3} sx={{ p: 3, maxWidth: 400, mx: "auto", mt: 4 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Refer & Earn
@@ -94,6 +109,21 @@ const ReferAndEarn = () => {
           Cash
         </Typography>
       </Paper>
+
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={3000}
+        onClose={() => setAlertOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setAlertOpen(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

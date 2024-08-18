@@ -428,7 +428,6 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     setSelectedWinner("");
     fetchChallenges();
   };
-
   const filteredData = useMemo(() => {
     const statuses = [
       "open_challenges",
@@ -438,13 +437,21 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     ];
     const currentChallenges = challenges[statuses[tabValue]] || [];
 
-    return currentChallenges.filter((item) =>
-      Object.values(item).some(
-        (value) =>
-          typeof value === "string" &&
-          value.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
+    return currentChallenges.filter((item) => {
+      const searchTermLower = searchTerm.toLowerCase();
+      const creatorPhoneNumber = item.room.user.phone_number;
+      const opponentPhoneNumber = item.opponent?.phone_number;
+
+      return (
+        item.challenge_id.toLowerCase().includes(searchTermLower) ||
+        item.created_by.username.toLowerCase().includes(searchTermLower) ||
+        item.room.room_amount.toString().includes(searchTerm) ||
+        (item.opponent &&
+          item.opponent.username.toLowerCase().includes(searchTermLower)) ||
+        (creatorPhoneNumber && creatorPhoneNumber.includes(searchTerm)) ||
+        (opponentPhoneNumber && opponentPhoneNumber.includes(searchTerm))
+      );
+    });
   }, [tabValue, searchTerm, challenges]);
 
   if (isLoading) return <CircularProgress />;
@@ -467,7 +474,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search here..."
+            placeholder="Search by ID, username, or phone number..."
             value={searchTerm}
             onChange={handleSearchChange}
             InputProps={{
@@ -495,7 +502,9 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                 <TableRow>
                   <TableCell>Challenge ID</TableCell>
                   <TableCell>Creator</TableCell>
+                  <TableCell>Creator Phone</TableCell>
                   <TableCell>Opponent</TableCell>
+                  <TableCell>Opponent Phone</TableCell>
                   <TableCell>Amount</TableCell>
                   {showActionColumn && <TableCell>Action</TableCell>}
                 </TableRow>
@@ -506,8 +515,14 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                     <TableRow key={row.challenge_id}>
                       <TableCell>{row.challenge_id}</TableCell>
                       <TableCell>{row.created_by.username}</TableCell>
+                      <TableCell>{row.room.user.phone_number}</TableCell>
                       <TableCell>
                         {row.opponent ? row.opponent.username : "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        {row.opponent && row.opponent.phone_number
+                          ? row.opponent.phone_number
+                          : "N/A"}
                       </TableCell>
                       <TableCell>{row.room.room_amount}</TableCell>
                       {showActionColumn && (
@@ -525,7 +540,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={showActionColumn ? 5 : 4}
+                      colSpan={showActionColumn ? 7 : 6}
                       align="center"
                     >
                       No data
