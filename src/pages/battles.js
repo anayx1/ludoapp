@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 import axios from "axios";
 
@@ -34,6 +34,7 @@ const CreateBattle = () => {
   const [openBattles, setOpenBattles] = useState([]);
   const [runningBattles, setRunningBattles] = useState([]);
   const [pendingBattles, setPendingBattles] = useState([]);
+  const [startedBattles, setStartedBattles] = useState([]);
   const [winningAmount, setWinningAmount] = useState([]);
   const [adminDetails, setAdminDetails] = useState(null);
 
@@ -67,6 +68,7 @@ const CreateBattle = () => {
         setOpenBattles(data.open_challenges);
         setRunningBattles(data.running_challenges);
         setPendingBattles(data.pending_challenges || []);
+        setStartedBattles(data.started_challenges);
       }
     } catch (error) {
       console.error("Error fetching battles:", error);
@@ -257,14 +259,13 @@ const CreateBattle = () => {
       // }
 
       const data = await response.json();
-       if (data.error)
-       {
-        setError(data.detail)
-       }
+      if (data.error) {
+        setError(data.detail);
+      }
       // console.log("Room started successfully:", data);
       // setCreatedRoomId(data.room_id);
       // handleCloseModal();
-      // window.location.reload();
+      window.location.reload();
     } catch (error) {
       console.error("Error starting room:", error);
       setError(error.message);
@@ -407,23 +408,15 @@ const CreateBattle = () => {
       </Box>
       {getUserIdFromSessionStorage() === battle.created_by.id ? (
         <>
-        <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
-          
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => handleCancelBattle(battle.challenge_id)}
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleCancelBattle(battle.challenge_id)}
             >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleStartBattle(battle)}
-            >
-            Start
-          </Button>
-            </div>
+              Cancel
+            </Button>
+          </div>
         </>
       ) : (
         <>
@@ -534,6 +527,118 @@ const CreateBattle = () => {
       </Paper>
     );
   };
+  const StartedBattleCard = ({ battle }) => {
+    const id = getUserIdFromSessionStorage();
+    return (
+      <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="body2">
+            Playing for 💰 {battle.room.room_amount}
+          </Typography>
+          <Typography variant="body2">
+            Prize: 💰{" "}
+            {calculateWinningAmount(
+              parseFloat(battle.room.room_amount),
+              adminDetails
+            )}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Avatar>{battle.created_by.username[0]}</Avatar>
+            <Typography variant="body2" className="text-wrapper-battle">
+              {battle.created_by.username}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <FlashOnIcon color="error" />
+            <Typography variant="body2">V/S</Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Avatar>
+              {battle.opponent ? battle.opponent.username[0] : "?"}
+            </Avatar>
+            <Typography variant="body2" className="text-wrapper-battle">
+              {battle.opponent ? battle.opponent.username : "Waiting..."}
+            </Typography>
+          </Box>
+        </Box>
+        {}
+        {getUserIdFromSessionStorage() === battle.created_by.id ? (
+          <>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleStartBattle(battle)}
+              >
+                Start
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                mt: 4,
+              }}
+            >
+              <CircularProgress />
+              <Typography variant="body2" className="text-wrapper-battle">
+                Waiting to start.....
+              </Typography>
+            </Box>
+          </>
+        )}
+
+        {/* <Button
+        fullWidth
+        variant="contained"
+        color="primary"
+        onClick={() => handleSubmitResult(battle.challenge_id)}
+        sx={{ mt: 2 }}
+      >
+        Upload Screenshot
+      </Button> */}
+      </Paper>
+    );
+  };
 
   const PendingBattleCard = ({ battle }) => {
     const id = getUserIdFromSessionStorage();
@@ -600,6 +705,7 @@ const CreateBattle = () => {
             </Typography>
           </Box>
         </Box>
+
         <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
           Status: Pending Result
         </Typography>
@@ -763,6 +869,26 @@ const CreateBattle = () => {
             {openBattles.map((battle) => (
               <OpenBattleCard key={battle.challenge_id} battle={battle} />
             ))}
+          </Paper>
+
+          <Paper
+            elevation={3}
+            sx={{ p: 3, width: "90%", margin: "auto", mt: 4, padding: "10px" }}
+          >
+            <Typography
+              variant="h5"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <FlashOnIcon sx={{ mr: 1 }} /> Active Battles
+            </Typography>
+            {startedBattles
+              // .filter(
+              //   (battle) => getUserIdFromSessionStorage() != battle.created_by.id
+              // )
+              .map((battle) => (
+                <StartedBattleCard key={battle.challenge_id} battle={battle} />
+              ))}
           </Paper>
 
           <Paper
