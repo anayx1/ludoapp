@@ -242,7 +242,7 @@ const RunningBattle = () => {
         </NoticeBox>
 
         <section>
-          <FormControl component="fieldset" fullWidth margin="normal">
+          <FormControl component="fieldset" fullWidth margin="normal" >
             <Typography
               variant="subtitle1"
               gutterBottom

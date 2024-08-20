@@ -37,7 +37,8 @@ const CreateBattle = () => {
   const [startedBattles, setStartedBattles] = useState([]);
   const [winningAmount, setWinningAmount] = useState([]);
   const [adminDetails, setAdminDetails] = useState(null);
-
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [createdRoomId, setCreatedRoomId] = useState(null);
@@ -140,27 +141,73 @@ const CreateBattle = () => {
 
   const handleCreateBattle = () => {
     if (!amount) {
-      setError("Please enter an amount.");
+      setErrorMessage("Please enter an amount.");
+      setIsErrorModalOpen(true);
       return;
     }
-
     const amountNum = Number(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      setError("Please enter a valid amount.");
+      setErrorMessage("Please enter a valid amount.");
+      setIsErrorModalOpen(true);
       return;
     }
 
     if (amountNum < 50) {
-      setError("Minimum room amount is 50 Rs.");
+      setErrorMessage("Minimum room amount is 50 Rs.");
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    if (amountNum > 15000) {
+      setErrorMessage("Maximum room amount is 15000 Rs.");
+      setIsErrorModalOpen(true);
       return;
     }
 
     if (amountNum > walletBalance) {
-      setError("Amount exceeds wallet balance.");
+      setErrorMessage("Amount exceeds wallet balance.");
+      setIsErrorModalOpen(true);
       return;
     }
 
-    setIsModalOpen(true);
+    // If all checks pass, proceed to create the room
+    createRoom(amountNum);
+  };
+  const createRoom = async (amount) => {
+    const currentUserId = getUserIdFromSessionStorage();
+    if (!currentUserId) {
+      setErrorMessage("User details not found. Please try logging in again.");
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            room_amount: amount,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create room");
+      }
+
+      const data = await response.json();
+      console.log("Room created successfully:", data);
+      setCreatedRoomId(data.room_id);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error creating room:", error);
+      setErrorMessage("Failed to create room. Please try again.");
+      setIsErrorModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -229,6 +276,38 @@ const CreateBattle = () => {
     } catch (error) {
       console.error("Error creating room:", error);
       setError("Failed to create room. Please try again.");
+    }
+  };
+  const handleUpdateRoomId = async () => {
+    const currentUserId = getUserIdFromSessionStorage();
+    if (!currentUserId) {
+      setError("User details not found. Please try logging in again.");
+      return;
+    }
+
+    try {
+      const response = await fetch(``, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          room_id: roomIdInput,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to Update room ID");
+      }
+
+      const data = await response.json();
+      console.log("Room ID Updated successfully:", data);
+      setCreatedRoomId(data.room_id);
+      handleCloseModal();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating room ID:", error);
+      setError("Failed to Update room ID. Please try again.");
     }
   };
 
@@ -467,6 +546,7 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              textAlign:"center"
             }}
           >
             <Avatar>{battle.created_by.username[0]}</Avatar>
@@ -479,6 +559,8 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              textAlign:"center"
+
             }}
           >
             <FlashOnIcon color="error" />
@@ -499,8 +581,61 @@ const CreateBattle = () => {
             </Typography>
           </Box>
         </Box>
+        {getUserIdFromSessionStorage() === battle.created_by.id ? (
+          <>
+            <div
+              style={{
+                display: "flex",
+                gap: "5px",
+                alignItems: "stretch",
+                justifyContent: "center",
+              }}
+            >
+              <TextField
+                label="Room ID Update"
+                placeholder="Enter Room Id"
+                variant="outlined"
+                value={roomIdInput}
+                onChange={handleRoomIdInputChange}
+                sx={{ mt: 2 }}
+                required
+              />
+              <Button
+                variant="contained"
+                onClick={handleUpdateRoomId}
+                sx={{ mt: 2 }}
+                disabled={!roomIdInput.trim()}
+              >
+                Submit
+              </Button>
+              {/* <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleStartBattle(battle)}
+              >
+                Start
+              </Button> */}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                mt: 4,
+              }}
+            >
+              <CircularProgress />
+              <Typography variant="body2" className="text-wrapper-battle">
+                Waiting to start.....
+              </Typography>
+            </Box> */}
+          </>
+        )}
         <div
-          style={{ display: "flex", justifyContent: "center", width: "95%" }}
+          style={{ display: "flex", justifyContent: "center", width: "100%" }}
         >
           {(id == battle.created_by.id || id == battle.opponent.id) && (
             <Button
@@ -527,118 +662,138 @@ const CreateBattle = () => {
       </Paper>
     );
   };
-  const StartedBattleCard = ({ battle }) => {
-    const id = getUserIdFromSessionStorage();
-    return (
-      <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="body2">
-            Playing for 💰 {battle.room.room_amount}
-          </Typography>
-          <Typography variant="body2">
-            Prize: 💰{" "}
-            {calculateWinningAmount(
-              parseFloat(battle.room.room_amount),
-              adminDetails
-            )}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Avatar>{battle.created_by.username[0]}</Avatar>
-            <Typography variant="body2" className="text-wrapper-battle">
-              {battle.created_by.username}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <FlashOnIcon color="error" />
-            <Typography variant="body2">V/S</Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Avatar>
-              {battle.opponent ? battle.opponent.username[0] : "?"}
-            </Avatar>
-            <Typography variant="body2" className="text-wrapper-battle">
-              {battle.opponent ? battle.opponent.username : "Waiting..."}
-            </Typography>
-          </Box>
-        </Box>
-        {}
-        {getUserIdFromSessionStorage() === battle.created_by.id ? (
-          <>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "5px" }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleStartBattle(battle)}
-              >
-                Start
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                mt: 4,
-              }}
-            >
-              <CircularProgress />
-              <Typography variant="body2" className="text-wrapper-battle">
-                Waiting to start.....
-              </Typography>
-            </Box>
-          </>
-        )}
+  // const StartedBattleCard = ({ battle }) => {
+  //   return (
+  //     <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+  //       <Box
+  //         sx={{
+  //           display: "flex",
+  //           justifyContent: "space-between",
+  //           alignItems: "center",
+  //         }}
+  //       >
+  //         <Typography variant="body2">
+  //           Playing for 💰 {battle.room.room_amount}
+  //         </Typography>
+  //         <Typography variant="body2">
+  //           Prize: 💰{" "}
+  //           {calculateWinningAmount(
+  //             parseFloat(battle.room.room_amount),
+  //             adminDetails
+  //           )}
+  //         </Typography>
+  //       </Box>
+  //       <Box
+  //         sx={{
+  //           display: "flex",
+  //           justifyContent: "space-between",
+  //           alignItems: "center",
+  //           mt: 2,
+  //         }}
+  //       >
+  //         <Box
+  //           sx={{
+  //             display: "flex",
+  //             flexDirection: "column",
+  //             alignItems: "center",
+  //           }}
+  //         >
+  //           <Avatar>{battle.created_by.username[0]}</Avatar>
+  //           <Typography variant="body2" className="text-wrapper-battle">
+  //             {battle.created_by.username}
+  //           </Typography>
+  //         </Box>
+  //         <Box
+  //           sx={{
+  //             display: "flex",
+  //             flexDirection: "column",
+  //             alignItems: "center",
+  //           }}
+  //         >
+  //           <FlashOnIcon color="error" />
+  //           <Typography variant="body2">V/S</Typography>
+  //         </Box>
+  //         <Box
+  //           sx={{
+  //             display: "flex",
+  //             flexDirection: "column",
+  //             alignItems: "center",
+  //           }}
+  //         >
+  //           <Avatar>
+  //             {battle.opponent ? battle.opponent.username[0] : "?"}
+  //           </Avatar>
+  //           <Typography variant="body2" className="text-wrapper-battle">
+  //             {battle.opponent ? battle.opponent.username : "Waiting..."}
+  //           </Typography>
+  //         </Box>
+  //       </Box>
+  //       {getUserIdFromSessionStorage() === battle.created_by.id ? (
+  //         <>
+  //           <div
+  //             style={{
+  //               display: "flex",
+  //               gap: "5px",
+  //               alignItems: "stretch",
+  //               justifyContent: "center",
+  //             }}
+  //           >
+  //             <TextField
+  //               label="Room ID Update"
+  //               placeholder="Enter Room Id"
+  //               variant="outlined"
+  //               value={roomIdInput}
+  //               onChange={handleRoomIdInputChange}
+  //               sx={{ mt: 2 }}
+  //               required
+  //             />
+  //             <Button
+  //               variant="contained"
+  //               onClick={handleUpdateRoomId}
+  //               sx={{ mt: 2 }}
+  //               disabled={!roomIdInput.trim()}
+  //             >
+  //               Submit
+  //             </Button>
+  //             {/* <Button
+  //               variant="contained"
+  //               color="primary"
+  //               onClick={() => handleStartBattle(battle)}
+  //             >
+  //               Start
+  //             </Button> */}
+  //           </div>
+  //         </>
+  //       ) : (
+  //         <>
+  //           <Box
+  //             sx={{
+  //               display: "flex",
+  //               flexDirection: "column",
+  //               alignItems: "center",
+  //               mt: 4,
+  //             }}
+  //           >
+  //             <CircularProgress />
+  //             <Typography variant="body2" className="text-wrapper-battle">
+  //               Waiting to start.....
+  //             </Typography>
+  //           </Box>
+  //         </>
+  //       )}
 
-        {/* <Button
-        fullWidth
-        variant="contained"
-        color="primary"
-        onClick={() => handleSubmitResult(battle.challenge_id)}
-        sx={{ mt: 2 }}
-      >
-        Upload Screenshot
-      </Button> */}
-      </Paper>
-    );
-  };
+  //       {/* <Button
+  //       fullWidth
+  //       variant="contained"
+  //       color="primary"
+  //       onClick={() => handleSubmitResult(battle.challenge_id)}
+  //       sx={{ mt: 2 }}
+  //     >
+  //       Upload Screenshot
+  //     </Button> */}
+  //     </Paper>
+  //   );
+  // };
 
   const PendingBattleCard = ({ battle }) => {
     const id = getUserIdFromSessionStorage();
@@ -871,7 +1026,7 @@ const CreateBattle = () => {
             ))}
           </Paper>
 
-          <Paper
+          {/* <Paper
             elevation={3}
             sx={{ p: 3, width: "90%", margin: "auto", mt: 4, padding: "10px" }}
           >
@@ -889,7 +1044,7 @@ const CreateBattle = () => {
               .map((battle) => (
                 <StartedBattleCard key={battle.challenge_id} battle={battle} />
               ))}
-          </Paper>
+          </Paper> */}
 
           <Paper
             elevation={3}
@@ -1149,6 +1304,52 @@ const CreateBattle = () => {
         </Box>
       </Modal>
 
+      <Modal
+        open={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        aria-labelledby="error-modal"
+        aria-describedby="error-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            maxWidth: "300px",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            id="error-modal"
+            variant="h6"
+            component="h2"
+            style={{ justifyContent: "center", textAlign: "center" }}
+          >
+            <ErrorOutlineIcon
+              style={{ fontSize: "80px" }}
+            />
+          </Typography>
+          <Typography
+            id="error-description"
+            sx={{ mt: 2, textAlign: "center" }}
+          >
+            {errorMessage}
+          </Typography>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => setIsErrorModalOpen(false)}
+            sx={{ mt: 2 }}
+          >
+            Close
+          </Button>
+        </Box>
+      </Modal>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
