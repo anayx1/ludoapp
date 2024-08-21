@@ -91,7 +91,9 @@ const SettingsPage = () => {
             max_deposit: settings.max_deposit,
             min_deposit: settings.min_deposit,
             max_withdraw: settings.max_withdraw,
-            min_withdraw: settings.min_withdraw,
+            upi_id: settings.upi_id,
+            upi_name: settings.upi_name,
+            upi_qr: "",
           }),
         }
       );
@@ -111,8 +113,9 @@ const SettingsPage = () => {
     try {
       const formData = new FormData();
       formData.append("upi_id", settings.upi_id);
+      formData.append("upi_name", settings.upi_name);
       if (upiQrFile) {
-        formData.append("upi_qr_image", upiQrFile);
+        formData.append("upi_qr", upiQrFile);
       }
 
       const response = await fetch(
@@ -239,8 +242,7 @@ const SettingsPage = () => {
 
             <Paper variant="outlined" sx={{ p: 2, mt: 2, mb: 2 }}>
               <Grid container spacing={2}>
-                {/* Commented out UPI Name field */}
-                {/* <Grid item xs={6}>
+                <Grid item xs={6}>
                   <TextField
                     fullWidth
                     label="UPI Name"
@@ -248,8 +250,8 @@ const SettingsPage = () => {
                     onChange={handleSettingChange("upi_name")}
                     margin="normal"
                   />
-                </Grid> */}
-                <Grid item xs={12}>
+                </Grid>
+                <Grid item xs={6}>
                   <TextField
                     fullWidth
                     label="UPI ID"

@@ -261,7 +261,7 @@ const BattleModal = ({
             <Grid item xs={6}>
               <Typography>{selectedChallenge.created_by.id}</Typography>
             </Grid>
-            {console.log(selectedChallenge,"asfsfd")}
+            {console.log(selectedChallenge, "asfsfd")}
             <Grid item xs={6}>
               <Typography>Name</Typography>
             </Grid>
@@ -272,7 +272,9 @@ const BattleModal = ({
               <Typography>Mobile</Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography>-</Typography>
+              <Typography>
+                {selectedChallenge.created_by.phone_number}
+              </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography>Cash</Typography>
@@ -336,7 +338,11 @@ const BattleModal = ({
               <Typography>Mobile</Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography>-</Typography>
+              <Typography>
+                {selectedChallenge.opponent
+                  ? selectedChallenge.opponent.phone_number
+                  : "-"}
+              </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography>Cash</Typography>

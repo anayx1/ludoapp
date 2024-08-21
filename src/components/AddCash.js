@@ -247,7 +247,7 @@ const AddCash = () => {
                 color="primary"
                 onClick={handleNext}
                 fullWidth
-                style={{ marginTop: "16px",background:"black" }}
+                style={{ marginTop: "16px", background: "black" }}
                 disabled={isLoading}
               >
                 Next
@@ -300,7 +300,7 @@ const AddCash = () => {
                   color="primary"
                   component="span"
                   fullWidth
-                  style={{ marginTop: "16px",background:"black" }}
+                  style={{ marginTop: "16px", background: "black" }}
                 >
                   Upload Screenshot
                 </Button>
@@ -320,7 +320,7 @@ const AddCash = () => {
                 color="primary"
                 onClick={handleBack}
                 fullWidth
-                style={{ marginTop: "50px",background:"black" }}
+                style={{ marginTop: "50px", background: "black" }}
                 disabled={isLoading}
               >
                 Back
@@ -330,7 +330,11 @@ const AddCash = () => {
                 color="primary"
                 onClick={handleSubmit}
                 fullWidth
-                style={{ marginTop: "16px",background:"black",color:"white" }}
+                style={{
+                  marginTop: "16px",
+                  background: "black",
+                  color: "white",
+                }}
                 disabled={!amount || !screenshot || !utrId || isLoading}
               >
                 {isLoading ? (
@@ -357,7 +361,6 @@ const AddCash = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Full-screen loader */}
       {isLoading && (
         <Box
           sx={{
