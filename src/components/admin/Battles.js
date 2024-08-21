@@ -261,6 +261,7 @@ const BattleModal = ({
             <Grid item xs={6}>
               <Typography>{selectedChallenge.created_by.id}</Typography>
             </Grid>
+            {console.log(selectedChallenge,"asfsfd")}
             <Grid item xs={6}>
               <Typography>Name</Typography>
             </Grid>

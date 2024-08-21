@@ -366,7 +366,8 @@ const CreateBattle = () => {
     }
 
     try {
-      const response = await fetch(
+      // First, join the challenge
+      const joinResponse = await fetch(
         `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${selectedBattle.challenge_id}/`,
         {
           method: "POST",
@@ -376,19 +377,40 @@ const CreateBattle = () => {
         }
       );
 
-      if (!response.ok) {
+      if (!joinResponse.ok) {
         throw new Error("Failed to join battle");
       }
 
-      const data = await response.json();
-      console.log("Joined battle successfully:", data);
-      window.location.reload();
-      setCreatedRoomId(data.room_id);
+      const joinData = await joinResponse.json();
+      console.log("Joined battle successfully:", joinData);
+
+      // Then, send the PUT request to make the challenge running
+      const makeRunningResponse = await fetch(
+        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${selectedBattle.challenge_id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          // Add any necessary body data here if required by your API
+          // body: JSON.stringify({ ... }),
+        }
+      );
+
+      if (!makeRunningResponse.ok) {
+        throw new Error("Failed to make challenge running");
+      }
+
+      const makeRunningData = await makeRunningResponse.json();
+      console.log("Challenge set to running:", makeRunningData);
+
+      setCreatedRoomId(joinData.room_id);
       setJoinModalOpen(false);
       fetchBattles();
+      window.location.reload();
     } catch (error) {
-      console.error("Error joining battle:", error);
-      setError("Failed to join battle. Please try again.");
+      console.error("Error in battle process:", error);
+      setError("Failed to complete the battle process. Please try again.");
     }
   };
 
@@ -546,7 +568,7 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              textAlign:"center"
+              textAlign: "center",
             }}
           >
             <Avatar>{battle.created_by.username[0]}</Avatar>
@@ -559,8 +581,7 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              textAlign:"center"
-
+              textAlign: "center",
             }}
           >
             <FlashOnIcon color="error" />
@@ -1241,47 +1262,7 @@ const CreateBattle = () => {
           <Typography id="join-battle-modal" variant="h6" component="h2">
             Join Battle
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              mt: 2,
-            }}
-          >
-            <Typography id="join-battle-description">
-              Room ID: {selectedBattle?.room.room_id}
-            </Typography>
-            <Tooltip title="Copy Room ID">
-              <ContentCopyIcon
-                onClick={handleCopyRoomCode}
-                sx={{
-                  marginLeft: "8px",
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                }}
-              />
-            </Tooltip>
-          </Box>
-          {copySuccess && (
-            <Typography
-              variant="caption"
-              color="success.main"
-              sx={{ mt: 1, display: "block" }}
-            >
-              Copied to clipboard!
-            </Typography>
-          )}
-          {copyError && (
-            <Typography
-              variant="caption"
-              color="error.main"
-              sx={{ mt: 1, display: "block" }}
-            >
-              Failed to copy. Please try manually selecting and copying the Room
-              ID.
-            </Typography>
-          )}
+
           <Typography sx={{ mt: 1 }}>
             Amount: 💰 {selectedBattle?.room.room_amount}
           </Typography>
@@ -1330,9 +1311,7 @@ const CreateBattle = () => {
             component="h2"
             style={{ justifyContent: "center", textAlign: "center" }}
           >
-            <ErrorOutlineIcon
-              style={{ fontSize: "80px" }}
-            />
+            <ErrorOutlineIcon style={{ fontSize: "80px" }} />
           </Typography>
           <Typography
             id="error-description"

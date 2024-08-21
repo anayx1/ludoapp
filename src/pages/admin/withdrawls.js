@@ -17,6 +17,7 @@ import {
   ListItem,
   ListItemText,
   IconButton,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
@@ -32,6 +33,7 @@ const WithdrawalsComponent = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [resetData, setResetData] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchWithdrawalData = async () => {
     try {
@@ -57,19 +59,36 @@ const WithdrawalsComponent = () => {
     setTabValue(newValue);
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   const getTabData = useMemo(() => {
+    let data;
     switch (tabValue) {
       case 0:
-        return withdrawalData.pending_withdrawals;
+        data = withdrawalData.pending_withdrawals;
+        break;
       case 1:
-        return withdrawalData.successful_withdrawals;
+        data = withdrawalData.successful_withdrawals;
+        break;
       case 2:
-        return withdrawalData.declined_withdrawals;
+        data = withdrawalData.declined_withdrawals;
+        break;
       default:
-        return [];
+        data = [];
     }
-  }, [tabValue, withdrawalData, resetData]);
-  console.log(getTabData);
+
+    return data.filter(
+      (withdrawal) =>
+        withdrawal.wallet.user.username
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        withdrawal.wallet.user.phone_number.includes(searchTerm) ||
+        withdrawal.withdrawal_amount.toString().includes(searchTerm)
+    );
+  }, [tabValue, withdrawalData, resetData, searchTerm]);
+
   const handleApprove = async (withdrawal) => {
     try {
       const response = await axios.put(
@@ -77,16 +96,6 @@ const WithdrawalsComponent = () => {
       );
       if (response.data.error === false) {
         console.log("Withdrawal approved successfully");
-        // setWithdrawalData((prevData) => ({
-        //   pending_withdrawals: prevData.pending_withdrawals.filter(
-        //     (w) => w.id !== withdrawal.id
-        //   ),
-        //   successful_withdrawals: [
-        //     ...prevData.successful_withdrawals,
-        //     { ...withdrawal, status: "S" },
-        //   ],
-        //   declined_withdrawals: prevData.declined_withdrawals,
-        // }));
         setResetData(true);
       } else {
         console.error("Error approving withdrawal:", response.data.detail);
@@ -104,17 +113,6 @@ const WithdrawalsComponent = () => {
       if (response.data.error === false) {
         console.log("Withdrawal declined successfully");
         setResetData(true);
-
-        // setWithdrawalData((prevData) => ({
-        //   pending_withdrawals: prevData.pending_withdrawals.filter(
-        //     (w) => w.id !== withdrawal.id
-        //   ),
-        //   successful_withdrawals: prevData.successful_withdrawals,
-        //   declined_withdrawals: [
-        //     ...prevData.declined_withdrawals,
-        //     { ...withdrawal, status: "D" },
-        //   ],
-        // }));
       } else {
         console.error("Error declining withdrawal:", response.data.detail);
       }
@@ -175,7 +173,7 @@ const WithdrawalsComponent = () => {
           )}
         </TableRow>
       )),
-    [resetData, getTabData, withdrawalData, tabValue]
+    [getTabData, tabValue]
   );
 
   const renderDetailsModal = () => (
@@ -323,6 +321,15 @@ const WithdrawalsComponent = () => {
             <Tab label="Declined" />
           </Tabs>
 
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search by username, phone number, or amount..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            sx={{ mt: 2, mb: 2 }}
+          />
+
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table>
               <TableHead>
@@ -330,7 +337,7 @@ const WithdrawalsComponent = () => {
                   <TableCell>Sr No.</TableCell>
                   <TableCell>Username</TableCell>
                   <TableCell>Mobile Number</TableCell>
-                  <TableCell>Amountt</TableCell>
+                  <TableCell>Amount</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Status</TableCell>
                   {tabValue === 0 && <TableCell>Action</TableCell>}

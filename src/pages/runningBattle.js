@@ -207,29 +207,6 @@ const RunningBattle = () => {
           </Typography>
           <ContentCopyIcon onClick={copyRoomCode} />
         </RoomCodeContainer>
-
-        {status1 && (
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={() => setIsModalOpen(true)}
-            sx={{ mt: 2 }}
-          >
-            Upload Screenshot
-          </Button>
-        )}
-
-        {/* <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          onClick={() => setIsModalOpen(true)}
-          sx={{ mt: 2 }}
-        >
-          Upload Screenshot
-        </Button> */}
-        {/* {console.log(battleDetails,"sdfsdf")} */}
         <NoticeBox>
           Notice:- सभी पॉपुलर गेम समाप्त होने के बाद रिजल्ट सबमिट/फिक्स जरूर
           सबमिट करें रिजल्ट सबमिट न करें या। गलत रिजल्ट सबमिट करने पर 25 की
@@ -242,7 +219,7 @@ const RunningBattle = () => {
         </NoticeBox>
 
         <section>
-          <FormControl component="fieldset" fullWidth margin="normal" >
+          <FormControl component="fieldset" fullWidth margin="normal">
             <Typography
               variant="subtitle1"
               gutterBottom
