@@ -967,10 +967,42 @@ const CreateBattle = () => {
   return (
     <>
       <Sidebar />
-
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "90%",
+            backgroundColor: "#b00000",
+            color: "#fff",
+            height: "auto",
+            textAlign: "center",
+            borderRadius: "20px",
+            marginTop: "10px",
+          }}
+        >
+          चेतावनी: सभी उपयोगकर्ता खेल समाप्त होने के बाद win/loss का परिणाम अवश्य
+          सबमिट करें। परिणाम सबमिट न करने या गलत परिणाम सबमिट करने पर 50 रुपये
+          की पेनल्टी लगा दी जाएगी।
+        </div>
+      </div>
       <Paper
         elevation={3}
-        sx={{ p: 3, width: "90%", margin: "auto", mt: 4, padding: "10px" }}
+        sx={{
+          p: 3,
+          width: "90%",
+          margin: "auto",
+          mt: 4,
+          padding: "10px",
+          alignItems: "center",
+        }}
       >
         {/* <div style={{display:"flex", justifyContent:"center",margin:"10px 0 10px 0"}}>
           <img src="/bg.jpg" width={300} height={200} style={{borderRadius:"5px"}} />

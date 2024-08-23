@@ -14,6 +14,8 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Sidebar from "@/components/Sidebar";
@@ -29,6 +31,7 @@ const RunningBattle = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gameOutcome, setGameOutcome] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
 
@@ -38,6 +41,12 @@ const RunningBattle = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (!isLoading && !battleDetails) {
+      router.push("/battles");
+    }
+  }, [isLoading, battleDetails, router]);
+
   const fetchBattleDetails = async () => {
     setIsLoading(true);
     try {
@@ -46,9 +55,16 @@ const RunningBattle = () => {
       );
       const data = await response.json();
       if (data.error === false) {
-        const battleDetail = data[`${status}_challenges`].find(
-          (c) => c.challenge_id == id
-        );
+        let battleDetail;
+        if (status === "running") {
+          battleDetail = data.running_challenges.find(
+            (c) => c.challenge_id == id
+          );
+        } else if (status === "pending") {
+          battleDetail = data.pending_challenges.find(
+            (c) => c.challenge_id == id
+          );
+        }
         setBattleDetails(battleDetail);
       }
     } catch (error) {
@@ -138,14 +154,68 @@ const RunningBattle = () => {
     }
   };
 
+  const handleCancelBattle = async () => {
+    if (!cancellationReason) {
+      setError("Please select a cancellation reason.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `https://ludotest.pythonanywhere.com/api/cancel-battle/${id}/${userId}/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ cancellation_reason: cancellationReason }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to cancel battle");
+
+      router.push("/battles");
+    } catch (error) {
+      console.error("Error cancelling battle:", error);
+      setError("Failed to cancel battle. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
-  if (!battleDetails) return <Typography>No battle details found</Typography>;
 
-  const isCreator = userId === battleDetails.created_by.id;
-  const shouldShowRoomIdInput = isCreator && !battleDetails.room.update_status;
+  const isCreator = userId === battleDetails?.created_by.id;
+  const isOpponent = userId === battleDetails?.opponent?.id;
+  const creatorHasCancelled = !!battleDetails?.creator_cancellation_reason;
+  const opponentHasCancelled = !!battleDetails?.opponent_cancellation_reason;
+  const userHasCancelled = isCreator
+    ? creatorHasCancelled
+    : opponentHasCancelled;
+  const otherUserHasCancelled = isCreator
+    ? opponentHasCancelled
+    : creatorHasCancelled;
+
+  const userResult = isCreator
+    ? battleDetails?.room_result?.creator_status
+    : battleDetails?.room_result?.opponent_status;
+  const opponentResult = isCreator
+    ? battleDetails?.room_result?.opponent_status
+    : battleDetails?.room_result?.creator_status;
+
+  const shouldShowCancelButton = !userHasCancelled && !userResult;
+  const shouldShowRoomIdInput =
+    isCreator &&
+    !battleDetails?.room.update_status &&
+    !userHasCancelled &&
+    !otherUserHasCancelled;
   const shouldShowWaitingMessage =
-    !isCreator && !battleDetails.room.update_status;
+    !isCreator &&
+    !battleDetails?.room.update_status &&
+    !userHasCancelled &&
+    !otherUserHasCancelled;
 
   return (
     <>
@@ -165,10 +235,10 @@ const RunningBattle = () => {
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
                 <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-                  {battleDetails.created_by.username[0]}
+                  {battleDetails?.created_by.username[0]}
                 </Avatar>
                 <Typography variant="h6">
-                  {battleDetails.created_by.username}
+                  {battleDetails?.created_by.username}
                 </Typography>
               </Box>
             </Grid>
@@ -180,10 +250,10 @@ const RunningBattle = () => {
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
                 <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-                  {battleDetails.opponent.username[0]}
+                  {battleDetails?.opponent?.username[0]}
                 </Avatar>
                 <Typography variant="h6">
-                  {battleDetails.opponent.username}
+                  {battleDetails?.opponent?.username}
                 </Typography>
               </Box>
             </Grid>
@@ -191,136 +261,220 @@ const RunningBattle = () => {
 
           <Box sx={{ mt: 3, textAlign: "center" }}>
             <Typography variant="h6">
-              Room Amount: ₹{battleDetails.room.room_amount}
+              Room Amount: ₹{battleDetails?.room.room_amount}
             </Typography>
             <Typography variant="h6">
-              Winning Amount: ₹{battleDetails.room.winning_amount}
+              Winning Amount: ₹{battleDetails?.room.winning_amount}
             </Typography>
           </Box>
 
-          {battleDetails.room.update_status && (
-            <Box
-              sx={{
-                mt: 3,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6" sx={{ mr: 2 }}>
-                Room Code: {battleDetails.room.room_id}
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<ContentCopyIcon />}
-                onClick={copyRoomCode}
-              >
-                Copy
-              </Button>
-            </Box>
-          )}
-
-          {shouldShowRoomIdInput && (
-            <Box sx={{ mt: 3 }}>
-              <TextField
-                fullWidth
-                label="Enter Room ID"
-                variant="outlined"
-                value={roomIdInput}
-                onChange={handleRoomIdInputChange}
-                sx={{ mb: 2 }}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleSubmitRoomId}
-                disabled={isSubmitting || !roomIdInput.trim()}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} />
-                ) : (
-                  "Submit Room ID"
-                )}
-              </Button>
-            </Box>
-          )}
-
-          {shouldShowWaitingMessage && (
-            <Box sx={{ mt: 3, textAlign: "center" }}>
-              <CircularProgress />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                Waiting for creator to enter room code...
-              </Typography>
-            </Box>
-          )}
-
-          {battleDetails.room.update_status && !battleDetails.room_result && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Submit Game Result
-              </Typography>
-              <FormControl component="fieldset" sx={{ width: "100%" }}>
-                <RadioGroup
-                  aria-label="game-outcome"
-                  name="game-outcome"
-                  value={gameOutcome}
-                  onChange={handleOutcomeChange}
-                  row
-                  sx={{ justifyContent: "center" }}
+          {!userHasCancelled && !otherUserHasCancelled && (
+            <>
+              {battleDetails?.room.update_status && status !== "pending" && (
+                <Box
+                  sx={{
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                 >
-                  <FormControlLabel value="W" control={<Radio />} label="Won" />
-                  <FormControlLabel
-                    value="L"
-                    control={<Radio />}
-                    label="Lost"
-                  />
-                </RadioGroup>
-              </FormControl>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-                id="screenshot-upload"
-              />
-              <label htmlFor="screenshot-upload">
-                <Button
-                  variant="contained"
-                  component="span"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Choose Screenshot
-                </Button>
-              </label>
-              {selectedFile && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Selected file: {selectedFile.name}
-                </Typography>
+                  <Typography variant="h6" sx={{ mr: 2 }}>
+                    Room Code: {battleDetails?.room.room_id}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<ContentCopyIcon />}
+                    onClick={copyRoomCode}
+                  >
+                    Copy
+                  </Button>
+                </Box>
               )}
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleUploadScreenshot}
-                sx={{ mt: 2 }}
-                disabled={isSubmitting || !selectedFile || !gameOutcome}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} />
-                ) : (
-                  "Upload Screenshot"
-                )}
-              </Button>
-            </Box>
+
+              {shouldShowRoomIdInput && (
+                <Box sx={{ mt: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Enter Room ID"
+                    variant="outlined"
+                    value={roomIdInput}
+                    onChange={handleRoomIdInputChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleSubmitRoomId}
+                    disabled={isSubmitting || !roomIdInput.trim()}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Submit Room ID"
+                    )}
+                  </Button>
+                </Box>
+              )}
+
+              {shouldShowWaitingMessage && (
+                <Box sx={{ mt: 3, textAlign: "center" }}>
+                  <CircularProgress />
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Waiting for creator to enter room code...
+                  </Typography>
+                </Box>
+              )}
+
+              {battleDetails?.room.update_status && !userResult && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Submit Your Game Result
+                  </Typography>
+                  <FormControl component="fieldset" sx={{ width: "100%" }}>
+                    <RadioGroup
+                      aria-label="game-outcome"
+                      name="game-outcome"
+                      value={gameOutcome}
+                      onChange={handleOutcomeChange}
+                      row
+                      sx={{ justifyContent: "center" }}
+                    >
+                      <FormControlLabel
+                        value="W"
+                        control={<Radio />}
+                        label="Won"
+                      />
+                      <FormControlLabel
+                        value="L"
+                        control={<Radio />}
+                        label="Lost"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    id="screenshot-upload"
+                  />
+                  <label htmlFor="screenshot-upload">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      fullWidth
+                      sx={{ mt: 2 }}
+                    >
+                      Choose Screenshot
+                    </Button>
+                  </label>
+                  {selectedFile && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Selected file: {selectedFile.name}
+                    </Typography>
+                  )}
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleUploadScreenshot}
+                    sx={{ mt: 2 }}
+                    disabled={isSubmitting || !selectedFile || !gameOutcome}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Upload Screenshot"
+                    )}
+                  </Button>
+                </Box>
+              )}
+
+              {userResult && (
+                <Box sx={{ mt: 3, textAlign: "center" }}>
+                  <Typography variant="h6">
+                    Your Result: {userResult === "W" ? "Won" : "Lost"}
+                  </Typography>
+                  {opponentResult && (
+                    <Typography variant="h6">
+                      Opponent's Result:{" "}
+                      {opponentResult === "W" ? "Won" : "Lost"}
+                    </Typography>
+                  )}
+                  {!opponentResult && (
+                    <Typography variant="body1">
+                      Waiting for opponent to submit their result...
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </>
           )}
 
-          {battleDetails.room_result && (
+          {userHasCancelled && (
             <Box sx={{ mt: 3, textAlign: "center" }}>
               <Typography variant="h6">
-                Game Result:{" "}
-                {battleDetails.room_result.status === "W" ? "Won" : "Lost"}
+                You have cancelled this battle. Reason:{" "}
+                {isCreator
+                  ? battleDetails?.creator_cancellation_reason
+                  : battleDetails?.opponent_cancellation_reason}
               </Typography>
-              {/* You can add more details about the result here if needed */}
+              <Typography variant="body1">
+                Waiting for the other player to cancel the battle.
+              </Typography>
+            </Box>
+          )}
+
+          {otherUserHasCancelled && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <Typography variant="h6">
+                The other player has cancelled this battle. Reason:{" "}
+                {isCreator
+                  ? battleDetails?.opponent_cancellation_reason
+                  : battleDetails?.creator_cancellation_reason}
+              </Typography>
+              <Typography variant="body1">
+                Please cancel the battle to complete the cancellation process.
+              </Typography>
+            </Box>
+          )}
+
+          {shouldShowCancelButton && (
+            <Box sx={{ mt: 3 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <Select
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  displayEmpty
+                  inputProps={{ "aria-label": "Cancel reason" }}
+                >
+                  <MenuItem value="" disabled>
+                    Select cancellation reason
+                  </MenuItem>
+                  <MenuItem value="No room code">No room code</MenuItem>
+                  <MenuItem value="Game not Started">Game not Started</MenuItem>
+                  <MenuItem value="Not Joined">Not Joined</MenuItem>
+                  <MenuItem value="Not Playing">Not Playing</MenuItem>
+                  <MenuItem value="Dont want to play">
+                    Don't want to play
+                  </MenuItem>
+                  <MenuItem value="Opponent abusing">Opponent abusing</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                onClick={handleCancelBattle}
+                disabled={isSubmitting || !cancellationReason}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  "Cancel Battle"
+                )}
+              </Button>
             </Box>
           )}
         </Paper>
