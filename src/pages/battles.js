@@ -219,28 +219,28 @@ const CreateBattle = () => {
     setRoomIdInput(event.target.value);
   };
 
-  const handleCopyRoomCode = () => {
-    if (selectedBattle?.room.room_id) {
-      const textArea = document.createElement("textarea");
-      textArea.value = selectedBattle.room.room_id;
-      document.body.appendChild(textArea);
-      textArea.select();
+  // const handleCopyRoomCode = () => {
+  //   if (selectedBattle?.room.room_id) {
+  //     const textArea = document.createElement("textarea");
+  //     textArea.value = selectedBattle.room.room_id;
+  //     document.body.appendChild(textArea);
+  //     textArea.select();
 
-      try {
-        document.execCommand("copy");
-        setCopySuccess(true);
-        setCopyError(false);
-        setTimeout(() => setCopySuccess(false), 2000); // Reset success message after 2 seconds
-      } catch (err) {
-        console.error("Failed to copy room code: ", err);
-        setCopyError(true);
-        setCopySuccess(false);
-        setTimeout(() => setCopyError(false), 2000); // Reset error message after 2 seconds
-      } finally {
-        document.body.removeChild(textArea);
-      }
-    }
-  };
+  //     try {
+  //       document.execCommand("copy");
+  //       setCopySuccess(true);
+  //       setCopyError(false);
+  //       setTimeout(() => setCopySuccess(false), 2000); // Reset success message after 2 seconds
+  //     } catch (err) {
+  //       console.error("Failed to copy room code: ", err);
+  //       setCopyError(true);
+  //       setCopySuccess(false);
+  //       setTimeout(() => setCopyError(false), 2000); // Reset error message after 2 seconds
+  //     } finally {
+  //       document.body.removeChild(textArea);
+  //     }
+  //   }
+  // };
 
   const handleSubmitRoomId = async () => {
     const currentUserId = getUserIdFromSessionStorage();
@@ -278,38 +278,38 @@ const CreateBattle = () => {
       setError("Failed to create room. Please try again.");
     }
   };
-  const handleUpdateRoomId = async () => {
-    const currentUserId = getUserIdFromSessionStorage();
-    if (!currentUserId) {
-      setError("User details not found. Please try logging in again.");
-      return;
-    }
+  // const handleUpdateRoomId = async () => {
+  //   const currentUserId = getUserIdFromSessionStorage();
+  //   if (!currentUserId) {
+  //     setError("User details not found. Please try logging in again.");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(``, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          room_id: roomIdInput,
-        }),
-      });
+  //   try {
+  //     const response = await fetch(``, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         room_id: roomIdInput,
+  //       }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Failed to Update room ID");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to Update room ID");
+  //     }
 
-      const data = await response.json();
-      console.log("Room ID Updated successfully:", data);
-      setCreatedRoomId(data.room_id);
-      handleCloseModal();
-      window.location.reload();
-    } catch (error) {
-      console.error("Error updating room ID:", error);
-      setError("Failed to Update room ID. Please try again.");
-    }
-  };
+  //     const data = await response.json();
+  //     console.log("Room ID Updated successfully:", data);
+  //     setCreatedRoomId(data.room_id);
+  //     handleCloseModal();
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("Error updating room ID:", error);
+  //     setError("Failed to Update room ID. Please try again.");
+  //   }
+  // };
 
   const handleJoinBattleClick = (battle) => {
     setSelectedBattle(battle);
@@ -612,7 +612,7 @@ const CreateBattle = () => {
                 justifyContent: "center",
               }}
             >
-              <TextField
+              {/* <TextField
                 label="Room ID Update"
                 placeholder="Enter Room Id"
                 variant="outlined"
@@ -628,7 +628,7 @@ const CreateBattle = () => {
                 disabled={!roomIdInput.trim()}
               >
                 Submit
-              </Button>
+              </Button> */}
               {/* <Button
                 variant="contained"
                 color="primary"
@@ -885,17 +885,22 @@ const CreateBattle = () => {
         <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
           Status: Pending Result
         </Typography>
-        {(id == battle.created_by.id || id == battle.opponent.id) && (
-          <Button
-            onClick={() => {
-              Router.push(
-                `/runningBattle?id=${battle.challenge_id}&status=pending`
-              );
-            }}
-          >
-            view
-          </Button>
-        )}
+        <div
+          style={{ display: "flex", justifyContent: "center", width: "100%" }}
+        >
+          {(id == battle.created_by.id || id == battle.opponent.id) && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                Router.push(
+                  `/runningBattle?id=${battle.challenge_id}&status=pending`
+                );
+              }}
+            >
+              view
+            </Button>
+          )}
+        </div>
         {/* <Button
         fullWidth
         variant="contained"

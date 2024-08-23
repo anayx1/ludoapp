@@ -7,42 +7,17 @@ import {
   Button,
   TextField,
   CircularProgress,
-  Modal,
-  Alert,
+  Paper,
+  Container,
+  Grid,
   FormControl,
   RadioGroup,
   FormControlLabel,
   Radio,
 } from "@mui/material";
-import { styled } from "@mui/system";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
-const NoticeBox = styled(Box)(({ theme }) => ({
-  backgroundColor: "#f8d7da",
-  color: "#721c24",
-  padding: theme.spacing(1),
-  borderRadius: theme.spacing(1),
-  margin: theme.spacing(2, 0),
-  textAlign: "center",
-}));
-
-const VersusContainer = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-around",
-  marginTop: "20px",
-  marginBottom: "20px",
-});
-
-const RoomCodeContainer = styled(Box)({
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  flexDirection: "column",
-  marginTop: "20px",
-});
 
 const RunningBattle = () => {
   const router = useRouter();
@@ -50,9 +25,12 @@ const RunningBattle = () => {
   const [battleDetails, setBattleDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [roomIdInput, setRoomIdInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [gameOutcome, setGameOutcome] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const userId = useMemo(() => getUserIdFromSessionStorage(), []);
 
   useEffect(() => {
     if (id) {
@@ -68,50 +46,62 @@ const RunningBattle = () => {
       );
       const data = await response.json();
       if (data.error === false) {
-        setBattleDetails(
-          data[`${status}_challenges`].filter((c) => c.challenge_id == id)[0]
+        const battleDetail = data[`${status}_challenges`].find(
+          (c) => c.challenge_id == id
         );
+        setBattleDetails(battleDetail);
       }
     } catch (error) {
-      console.error("Error fetching battles:", error);
+      console.error("Error fetching battle details:", error);
+      setError("Failed to fetch battle details. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleRoomIdInputChange = (event) => {
+    setRoomIdInput(event.target.value);
+  };
+
+  const handleSubmitRoomId = async () => {
+    if (!roomIdInput.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `https://ludotest.pythonanywhere.com/api/update-room-id/${id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ room_id: roomIdInput }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update room ID");
+
+      await fetchBattleDetails(); // Refresh battle details
+    } catch (error) {
+      console.error("Error updating room ID:", error);
+      setError("Failed to update room ID. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(battleDetails?.room?.room_id);
+    alert("Room Code Copied to Clipboard");
+  };
+
+  const handleOutcomeChange = (event) => {
+    setGameOutcome(event.target.value);
+  };
+
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
-  const getUserIdFromSessionStorage = () => {
-    for (let key in sessionStorage) {
-      try {
-        const data = JSON.parse(sessionStorage.getItem(key));
-        if (data && data.user_details && data.user_details.id) {
-          return data.user_details.id;
-        } else if (data && data.id) {
-          return data.id;
-        }
-      } catch (error) {
-        console.log(`Error parsing data from ${key}:`, error);
-      }
-    }
-    return null;
-  };
-
-  var status1 = useMemo(() => {
-    const id = getUserIdFromSessionStorage();
-    if (id == battleDetails?.created_by?.id) {
-      if (!!battleDetails?.room_result?.creator_screenshot) return false;
-      else {
-        return true;
-      }
-    } else if (id == battleDetails?.opponent.id) {
-      if (!!battleDetails?.room_result?.opponent_screenshot) return false;
-      else {
-        return true;
-      }
-    }
-  }, [battleDetails]);
 
   const handleUploadScreenshot = async () => {
     if (!selectedFile || !gameOutcome) {
@@ -119,12 +109,12 @@ const RunningBattle = () => {
       return;
     }
 
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("screenshot", selectedFile);
     formData.append("status", gameOutcome);
 
     try {
-      const userId = getUserIdFromSessionStorage();
       const response = await fetch(
         `https://ludotest.pythonanywhere.com/api/create-room-result/${userId}/${id}/`,
         {
@@ -137,12 +127,14 @@ const RunningBattle = () => {
 
       const data = await response.json();
       console.log("Result submitted successfully:", data);
-      setIsModalOpen(false);
-      router.push("/battles");
-      fetchBattleDetails(); // Refresh battle details
+      setSelectedFile(null);
+      setGameOutcome("");
+      await fetchBattleDetails(); // Refresh battle details
     } catch (error) {
+      console.error("Error submitting result:", error);
       setError("Failed to submit result. Please try again.");
-      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -150,163 +142,207 @@ const RunningBattle = () => {
   if (error) return <Typography color="error">{error}</Typography>;
   if (!battleDetails) return <Typography>No battle details found</Typography>;
 
-  const copyRoomCode = () => {
-    navigator.clipboard.writeText(battleDetails?.room?.room_id);
-    alert("Room Code Copied to Clipboard");
-  };
+  const isCreator = userId === battleDetails.created_by.id;
+  const shouldShowRoomIdInput = isCreator && !battleDetails.room.update_status;
+  const shouldShowWaitingMessage =
+    !isCreator && !battleDetails.room.update_status;
 
   return (
     <>
       <Sidebar />
-      <Box sx={{ padding: "20px", margin: "0 auto" }}>
-        <NoticeBox>
-          Notice:- पॉपुलर का रूम कोड डालने पर यूज़र का बैलेंस जीरो कर दिया जाएगा
-          🙏 (User's balance will be reduced to zero on entering Popular's room
-          code)
-        </NoticeBox>
-
-        <VersusContainer sx={{ justifyContent: "space-between" }}>
-          <Box sx={{ textAlign: "center" }}>
-            <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-              {battleDetails?.created_by?.username}
-            </Avatar>
-            <Typography className="text-wrapper-battle">
-              {battleDetails?.created_by?.username}
-            </Typography>
-          </Box>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6">V/S</Typography>
-            <Typography variant="h6" color="green">
-              ₹{battleDetails?.room?.room_amount}
-            </Typography>
-          </div>
-          <Box sx={{ textAlign: "center" }}>
-            <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-              {battleDetails?.opponent
-                ? battleDetails?.opponent?.username
-                : "?"}
-            </Avatar>
-            <Typography className="text-wrapper-battle">
-              {battleDetails?.opponent
-                ? battleDetails?.opponent?.username
-                : "Waiting..."}
-            </Typography>
-          </Box>
-        </VersusContainer>
-
-        <RoomCodeContainer sx={{ flexDirection: "row", gap: "10px" }}>
-          <Typography variant="h6">
-            Room Code: {battleDetails?.room?.room_id}
+      <Container maxWidth="md">
+        <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h4" gutterBottom align="center">
+            Battle Details
           </Typography>
-          <ContentCopyIcon onClick={copyRoomCode} />
-        </RoomCodeContainer>
-        <NoticeBox>
-          Notice:- सभी पॉपुलर गेम समाप्त होने के बाद रिजल्ट सबमिट/फिक्स जरूर
-          सबमिट करें रिजल्ट सबमिट न करें या। गलत रिजल्ट सबमिट करने पर 25 की
-          पेनल्टी लगा दी जाएगी
-        </NoticeBox>
 
-        <NoticeBox>
-          Notice:- यदि आपका कंफर्मेंट गलत होता है या रिजल्ट गलत होता है तो गेम
-          सीधा कैंसिल कर दिया जाएगा।
-        </NoticeBox>
-
-        <section>
-          <FormControl component="fieldset" fullWidth margin="normal">
-            <Typography
-              variant="subtitle1"
-              gutterBottom
-              sx={{ textAlign: "center" }}
-            >
-              Game Outcome
-            </Typography>
-            <RadioGroup
-              aria-label="game-outcome"
-              name="game-outcome"
-              value={gameOutcome}
-              sx={{
-                alignItems: "center",
-                flexDirection: "row",
-                justifyContent: "center",
-              }}
-              onChange={(e) => setGameOutcome(e.target.value)}
-            >
-              <FormControlLabel value="W" control={<Radio />} label="Won" />
-              <FormControlLabel value="L" control={<Radio />} label="Lost" />
-            </RadioGroup>
-          </FormControl>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-            id="screenshot-upload"
-          />
-          <label htmlFor="screenshot-upload">
-            <Button
-              fullWidth
-              variant="contained"
-              component="span"
-              sx={{ mt: 2 }}
-            >
-              Choose Screenshot
-            </Button>
-          </label>
-          {selectedFile && (
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              Selected file: {selectedFile.name}
-            </Typography>
-          )}
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleUploadScreenshot}
-            sx={{ mt: 2 }}
-            disabled={!selectedFile || !gameOutcome}
+          <Grid
+            container
+            spacing={3}
+            justifyContent="center"
+            alignItems="center"
           >
-            Upload Screenshot
-          </Button>
-        </section>
+            <Grid item xs={12} sm={5}>
+              <Box sx={{ textAlign: "center" }}>
+                <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
+                  {battleDetails.created_by.username[0]}
+                </Avatar>
+                <Typography variant="h6">
+                  {battleDetails.created_by.username}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <Typography variant="h5" align="center">
+                VS
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={5}>
+              <Box sx={{ textAlign: "center" }}>
+                <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
+                  {battleDetails.opponent.username[0]}
+                </Avatar>
+                <Typography variant="h6">
+                  {battleDetails.opponent.username}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
 
-        <Modal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          aria-labelledby="upload-screenshot-modal"
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 300,
-              bgcolor: "background.paper",
-              boxShadow: 24,
-              p: 4,
-              borderRadius: 2,
-            }}
-          >
-            <Typography
-              id="upload-screenshot-modal"
-              variant="h6"
-              component="h2"
-              gutterBottom
-            >
-              Upload Screenshot
+          <Box sx={{ mt: 3, textAlign: "center" }}>
+            <Typography variant="h6">
+              Room Amount: ₹{battleDetails.room.room_amount}
+            </Typography>
+            <Typography variant="h6">
+              Winning Amount: ₹{battleDetails.room.winning_amount}
             </Typography>
           </Box>
-        </Modal>
-      </Box>
+
+          {battleDetails.room.update_status && (
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6" sx={{ mr: 2 }}>
+                Room Code: {battleDetails.room.room_id}
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<ContentCopyIcon />}
+                onClick={copyRoomCode}
+              >
+                Copy
+              </Button>
+            </Box>
+          )}
+
+          {shouldShowRoomIdInput && (
+            <Box sx={{ mt: 3 }}>
+              <TextField
+                fullWidth
+                label="Enter Room ID"
+                variant="outlined"
+                value={roomIdInput}
+                onChange={handleRoomIdInputChange}
+                sx={{ mb: 2 }}
+              />
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleSubmitRoomId}
+                disabled={isSubmitting || !roomIdInput.trim()}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  "Submit Room ID"
+                )}
+              </Button>
+            </Box>
+          )}
+
+          {shouldShowWaitingMessage && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <CircularProgress />
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Waiting for creator to enter room code...
+              </Typography>
+            </Box>
+          )}
+
+          {battleDetails.room.update_status && !battleDetails.room_result && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Submit Game Result
+              </Typography>
+              <FormControl component="fieldset" sx={{ width: "100%" }}>
+                <RadioGroup
+                  aria-label="game-outcome"
+                  name="game-outcome"
+                  value={gameOutcome}
+                  onChange={handleOutcomeChange}
+                  row
+                  sx={{ justifyContent: "center" }}
+                >
+                  <FormControlLabel value="W" control={<Radio />} label="Won" />
+                  <FormControlLabel
+                    value="L"
+                    control={<Radio />}
+                    label="Lost"
+                  />
+                </RadioGroup>
+              </FormControl>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+                id="screenshot-upload"
+              />
+              <label htmlFor="screenshot-upload">
+                <Button
+                  variant="contained"
+                  component="span"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                >
+                  Choose Screenshot
+                </Button>
+              </label>
+              {selectedFile && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Selected file: {selectedFile.name}
+                </Typography>
+              )}
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleUploadScreenshot}
+                sx={{ mt: 2 }}
+                disabled={isSubmitting || !selectedFile || !gameOutcome}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  "Upload Screenshot"
+                )}
+              </Button>
+            </Box>
+          )}
+
+          {battleDetails.room_result && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <Typography variant="h6">
+                Game Result:{" "}
+                {battleDetails.room_result.status === "W" ? "Won" : "Lost"}
+              </Typography>
+              {/* You can add more details about the result here if needed */}
+            </Box>
+          )}
+        </Paper>
+      </Container>
     </>
   );
 };
+
+function getUserIdFromSessionStorage() {
+  for (let key in sessionStorage) {
+    try {
+      const data = JSON.parse(sessionStorage.getItem(key));
+      if (data && data.user_details && data.user_details.id) {
+        return data.user_details.id;
+      } else if (data && data.id) {
+        return data.id;
+      }
+    } catch (error) {
+      console.log(`Error parsing data from ${key}:`, error);
+    }
+  }
+  return null;
+}
 
 export default withAuth(RunningBattle);
