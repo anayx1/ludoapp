@@ -1,6 +1,7 @@
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-// import Loader from '@/components/loader'
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { CircularProgress, Box } from "@mui/material";
 
 const withAuth = (WrappedComponent) => {
   return (props) => {
@@ -9,11 +10,19 @@ const withAuth = (WrappedComponent) => {
 
     useEffect(() => {
       const checkAuth = () => {
-        const userData = sessionStorage.getItem('userData');
+        const userData = Cookies.get("userData");
         if (!userData) {
-          Router.replace('/login');
+          Router.replace("/login");
         } else {
-          setIsLoading(false);
+          try {
+            // Attempt to parse the cookie to ensure it's valid JSON
+            JSON.parse(decodeURIComponent(userData));
+            setIsLoading(false);
+          } catch (error) {
+            console.error("Invalid user data in cookie:", error);
+            Cookies.remove("userData"); // Remove invalid cookie
+            Router.replace("/login");
+          }
         }
       };
 
@@ -21,9 +30,16 @@ const withAuth = (WrappedComponent) => {
     }, []);
 
     if (isLoading) {
-      return <div>
-        {/* <Loader/> */} Loading...
-      </div>; // Or your custom loading component
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+        >
+          <CircularProgress />
+        </Box>
+      );
     }
 
     return <WrappedComponent {...props} />;

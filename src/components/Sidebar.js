@@ -5,6 +5,7 @@ import Drawer from "@mui/material/Drawer";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import Divider from "@mui/material/Divider";
+import Cookies from "js-cookie";
 
 import {
   List,
@@ -25,6 +26,7 @@ export default function TemporaryDrawer() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const [userData, setUserData] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   const fetchUserDetails = async (userId, token) => {
     try {
@@ -51,12 +53,26 @@ export default function TemporaryDrawer() {
     }
   };
 
+  const getDecodedCookieData = () => {
+    const cookieData = Cookies.get("userData");
+    return cookieData ? JSON.parse(decodeURIComponent(cookieData)) : null;
+  };
+
   useEffect(() => {
     const loadAndUpdateUserData = async () => {
-      const storedData = sessionStorage.getItem("userData");
+      let storedData = sessionStorage.getItem("userData");
+      if (!storedData) {
+        const cookieData = getDecodedCookieData();
+        if (cookieData) {
+          storedData = JSON.stringify(cookieData);
+        }
+      }
+
       if (storedData) {
         const parsedData = JSON.parse(storedData);
         setUserData(parsedData);
+        setWalletBalance(parsedData.user_details.wallet.balance || 0);
+
         // Fetch latest user details
         const updatedData = await fetchUserDetails(
           parsedData.user_details.id,
@@ -67,17 +83,17 @@ export default function TemporaryDrawer() {
             ...parsedData,
             user_details: updatedData.user_details,
           };
-          sessionStorage.setItem("userData", JSON.stringify(newUserData));
+          const newUserDataString = JSON.stringify(newUserData);
+          sessionStorage.setItem("userData", newUserDataString);
+          Cookies.set("userData", newUserDataString, { expires: 7 }); // Cookie expires in 7 days
           setUserData(newUserData);
+          setWalletBalance(newUserData.user_details.wallet.balance || 0);
         }
       }
     };
 
     loadAndUpdateUserData();
   }, []);
-
-  const user_details = userData?.user_details;
-  const wallet_balance = user_details?.wallet?.balance || 0;
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -106,21 +122,23 @@ export default function TemporaryDrawer() {
   const legal = () => {
     router.push("/legal");
   };
+
   const history = () => {
     router.push("/history");
   };
+
   const refer = () => {
     router.push("/referandearn");
   };
+
   const reload = () => {
     window.location.reload();
   };
-  // const app = () => {
-  //   ;
-  // };
 
   const handleLogout = () => {
     sessionStorage.removeItem("userData");
+    Cookies.remove("userData");
+    setWalletBalance(0);
     window.location.href = "/login";
   };
 
@@ -128,7 +146,7 @@ export default function TemporaryDrawer() {
     <Box sx={{ width: 300 }} role="presentation" onClick={toggleDrawer(false)}>
       <List style={{ paddingLeft: "15px" }}>
         <Typography variant="body1" style={{ fontSize: "1.5rem" }}>
-          <b>Hello, {user_details?.username}</b>
+          <b>Hello, {userData?.user_details?.username}</b>
         </Typography>
       </List>
       <Divider />
@@ -229,7 +247,6 @@ export default function TemporaryDrawer() {
       </List>
       <Divider />
       <InstallPWA />
-
       <Divider />
       <List>
         <ListItemButton
@@ -295,8 +312,9 @@ export default function TemporaryDrawer() {
           <div
             style={{
               display: "flex",
-              alignItems: "center" ,
-              flexDirection:"row",gap:"15px"
+              alignItems: "center",
+              flexDirection: "row",
+              gap: "15px",
             }}
           >
             <CachedIcon style={{ cursor: "pointer" }} onClick={reload} />
@@ -312,9 +330,8 @@ export default function TemporaryDrawer() {
               }}
             >
               <AccountBalanceWalletIcon style={{ fontSize: "2.2rem" }} />
-
               <Typography style={{ fontSize: "1rem", color: "white" }}>
-                {wallet_balance.toFixed(1)}
+                {walletBalance.toFixed(1)}
               </Typography>
             </div>
           </div>

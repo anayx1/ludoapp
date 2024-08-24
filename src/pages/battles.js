@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import Cookies from "js-cookie";
 
 import axios from "axios";
 
@@ -83,48 +84,55 @@ const CreateBattle = () => {
   };
 
   const fetchWalletBalance = () => {
-    let foundWalletBalance = null;
-
-    for (let key in sessionStorage) {
+    const userData = Cookies.get("userData");
+    if (userData) {
       try {
-        const data = JSON.parse(sessionStorage.getItem(key));
-        if (data && data.user_details && data.user_details.wallet) {
-          foundWalletBalance = data.user_details.wallet.balance;
-          break;
-        } else if (data && data.wallet) {
-          foundWalletBalance = data.wallet.balance;
-          break;
+        const parsedData = JSON.parse(decodeURIComponent(userData));
+        if (
+          parsedData &&
+          parsedData.user_details &&
+          parsedData.user_details.wallet
+        ) {
+          setWalletBalance(parsedData.user_details.wallet.balance);
         }
       } catch (error) {
-        console.log(`Error parsing data from ${key}:`, error);
+        console.error("Error parsing user data from cookie:", error);
       }
-    }
-
-    if (foundWalletBalance !== null) {
-      setWalletBalance(foundWalletBalance);
-    } else {
-      console.log("Wallet balance not found in any expected location");
     }
   };
 
   const fetchUserId = () => {
-    const id = getUserIdFromSessionStorage();
-    if (id) {
-      setUserId(id);
+    const userData = Cookies.get("userData");
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(userData));
+        if (
+          parsedData &&
+          parsedData.user_details &&
+          parsedData.user_details.id
+        ) {
+          setUserId(parsedData.user_details.id);
+        }
+      } catch (error) {
+        console.error("Error parsing user data from cookie:", error);
+      }
     }
   };
 
-  const getUserIdFromSessionStorage = () => {
-    for (let key in sessionStorage) {
+  const getUserIdFromCookie = () => {
+    const userData = Cookies.get("userData");
+    if (userData) {
       try {
-        const data = JSON.parse(sessionStorage.getItem(key));
-        if (data && data.user_details && data.user_details.id) {
-          return data.user_details.id;
-        } else if (data && data.id) {
-          return data.id;
+        const parsedData = JSON.parse(decodeURIComponent(userData));
+        if (
+          parsedData &&
+          parsedData.user_details &&
+          parsedData.user_details.id
+        ) {
+          return parsedData.user_details.id;
         }
       } catch (error) {
-        console.log(`Error parsing data from ${key}:`, error);
+        console.error("Error parsing user data from cookie:", error);
       }
     }
     return null;
@@ -173,8 +181,9 @@ const CreateBattle = () => {
     // If all checks pass, proceed to create the room
     createRoom(amountNum);
   };
+
   const createRoom = async (amount) => {
-    const currentUserId = getUserIdFromSessionStorage();
+    const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setErrorMessage("User details not found. Please try logging in again.");
       setIsErrorModalOpen(true);
@@ -219,31 +228,8 @@ const CreateBattle = () => {
     setRoomIdInput(event.target.value);
   };
 
-  // const handleCopyRoomCode = () => {
-  //   if (selectedBattle?.room.room_id) {
-  //     const textArea = document.createElement("textarea");
-  //     textArea.value = selectedBattle.room.room_id;
-  //     document.body.appendChild(textArea);
-  //     textArea.select();
-
-  //     try {
-  //       document.execCommand("copy");
-  //       setCopySuccess(true);
-  //       setCopyError(false);
-  //       setTimeout(() => setCopySuccess(false), 2000); // Reset success message after 2 seconds
-  //     } catch (err) {
-  //       console.error("Failed to copy room code: ", err);
-  //       setCopyError(true);
-  //       setCopySuccess(false);
-  //       setTimeout(() => setCopyError(false), 2000); // Reset error message after 2 seconds
-  //     } finally {
-  //       document.body.removeChild(textArea);
-  //     }
-  //   }
-  // };
-
   const handleSubmitRoomId = async () => {
-    const currentUserId = getUserIdFromSessionStorage();
+    const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setError("User details not found. Please try logging in again.");
       return;
@@ -278,45 +264,14 @@ const CreateBattle = () => {
       setError("Failed to create room. Please try again.");
     }
   };
-  // const handleUpdateRoomId = async () => {
-  //   const currentUserId = getUserIdFromSessionStorage();
-  //   if (!currentUserId) {
-  //     setError("User details not found. Please try logging in again.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await fetch(``, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         room_id: roomIdInput,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to Update room ID");
-  //     }
-
-  //     const data = await response.json();
-  //     console.log("Room ID Updated successfully:", data);
-  //     setCreatedRoomId(data.room_id);
-  //     handleCloseModal();
-  //     window.location.reload();
-  //   } catch (error) {
-  //     console.error("Error updating room ID:", error);
-  //     setError("Failed to Update room ID. Please try again.");
-  //   }
-  // };
 
   const handleJoinBattleClick = (battle) => {
     setSelectedBattle(battle);
     setJoinModalOpen(true);
   };
+
   const handleStartBattle = async (battle) => {
-    const currentUserId = getUserIdFromSessionStorage();
+    const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setError("User details not found. Please try logging in again.");
       return;
@@ -333,17 +288,10 @@ const CreateBattle = () => {
         }
       );
 
-      // if (!response.ok) {
-      //   throw new Error("Failed to start room");
-      // }
-
       const data = await response.json();
       if (data.error) {
         setError(data.detail);
       }
-      // console.log("Room started successfully:", data);
-      // setCreatedRoomId(data.room_id);
-      // handleCloseModal();
       window.location.reload();
     } catch (error) {
       console.error("Error starting room:", error);
@@ -354,7 +302,7 @@ const CreateBattle = () => {
   const handleJoinBattleConfirm = async () => {
     if (!selectedBattle) return;
 
-    const currentUserId = getUserIdFromSessionStorage();
+    const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setError("User ID not found. Please try logging in again.");
       return;
@@ -392,8 +340,6 @@ const CreateBattle = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          // Add any necessary body data here if required by your API
-          // body: JSON.stringify({ ... }),
         }
       );
 
@@ -438,6 +384,7 @@ const CreateBattle = () => {
       setError("Failed to cancel battle. Please try again.");
     }
   };
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -450,32 +397,13 @@ const CreateBattle = () => {
           ? response.data
           : [response.data];
         setWinningAmount(dataArray);
-        // console.log("WinningAmount state set:", dataArray);
       } catch (error) {
         // console.error("Error fetching admin data:", error);
-      } finally {
       }
     };
 
     fetchAdminData();
   }, []);
-
-  const calculateWinningAmount = (roomAmount) => {
-    if (!winningAmount || winningAmount.length === 0) {
-      console.error("Admin details not loaded yet");
-      return "0.00";
-    }
-
-    const adminDetails = winningAmount[0];
-
-    const adminPercentage = parseFloat(adminDetails.admin_percentage) || 0;
-    const referralCommission =
-      parseFloat(adminDetails.referral_commission) || 0;
-
-    const totalDeduction = (adminPercentage + referralCommission) / 100;
-    const winningAmountValue = roomAmount * 2 * (1 - totalDeduction);
-    return winningAmountValue.toFixed(2);
-  };
 
   const OpenBattleCard = ({ battle }) => (
     <Paper
@@ -488,8 +416,6 @@ const CreateBattle = () => {
         alignItems: "center",
       }}
     >
-      {/* {console.log(response, "admin")} */}
-
       <Box>
         <Typography variant="subtitle1">
           Challenge from {battle.created_by.username}
@@ -499,15 +425,11 @@ const CreateBattle = () => {
             Entry Fee: 💰 {parseFloat(battle.room.room_amount).toFixed(2)}
           </Typography>
           <Typography variant="body2">
-            Prize: 💰{" "}
-            {calculateWinningAmount(
-              parseFloat(battle.room.room_amount),
-              adminDetails
-            )}
+            Prize: 💰 {parseFloat(battle.room.winning_amount).toFixed(2)}
           </Typography>
         </Box>
       </Box>
-      {getUserIdFromSessionStorage() === battle.created_by.id ? (
+      {getUserIdFromCookie() === battle.created_by.id ? (
         <>
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <Button
@@ -534,7 +456,7 @@ const CreateBattle = () => {
   );
 
   const RunningBattleCard = ({ battle }) => {
-    const id = getUserIdFromSessionStorage();
+    const id = getUserIdFromCookie();
     return (
       <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
         <Box
@@ -548,11 +470,7 @@ const CreateBattle = () => {
             Playing for 💰 {battle.room.room_amount}
           </Typography>
           <Typography variant="body2">
-            Prize: 💰{" "}
-            {calculateWinningAmount(
-              parseFloat(battle.room.room_amount),
-              adminDetails
-            )}
+            Prize: 💰 {parseFloat(battle.room.winning_amount).toFixed(2)}
           </Typography>
         </Box>
         <Box
@@ -602,59 +520,6 @@ const CreateBattle = () => {
             </Typography>
           </Box>
         </Box>
-        {getUserIdFromSessionStorage() === battle.created_by.id ? (
-          <>
-            <div
-              style={{
-                display: "flex",
-                gap: "5px",
-                alignItems: "stretch",
-                justifyContent: "center",
-              }}
-            >
-              {/* <TextField
-                label="Room ID Update"
-                placeholder="Enter Room Id"
-                variant="outlined"
-                value={roomIdInput}
-                onChange={handleRoomIdInputChange}
-                sx={{ mt: 2 }}
-                required
-              />
-              <Button
-                variant="contained"
-                onClick={handleUpdateRoomId}
-                sx={{ mt: 2 }}
-                disabled={!roomIdInput.trim()}
-              >
-                Submit
-              </Button> */}
-              {/* <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleStartBattle(battle)}
-              >
-                Start
-              </Button> */}
-            </div>
-          </>
-        ) : (
-          <>
-            {/* <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                mt: 4,
-              }}
-            >
-              <CircularProgress />
-              <Typography variant="body2" className="text-wrapper-battle">
-                Waiting to start.....
-              </Typography>
-            </Box> */}
-          </>
-        )}
         <div
           style={{ display: "flex", justifyContent: "center", width: "100%" }}
         >
@@ -671,153 +536,12 @@ const CreateBattle = () => {
             </Button>
           )}
         </div>
-        {/* <Button
-        fullWidth
-        variant="contained"
-        color="primary"
-        onClick={() => handleSubmitResult(battle.challenge_id)}
-        sx={{ mt: 2 }}
-      >
-        Upload Screenshot
-      </Button> */}
       </Paper>
     );
   };
-  // const StartedBattleCard = ({ battle }) => {
-  //   return (
-  //     <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-  //       <Box
-  //         sx={{
-  //           display: "flex",
-  //           justifyContent: "space-between",
-  //           alignItems: "center",
-  //         }}
-  //       >
-  //         <Typography variant="body2">
-  //           Playing for 💰 {battle.room.room_amount}
-  //         </Typography>
-  //         <Typography variant="body2">
-  //           Prize: 💰{" "}
-  //           {calculateWinningAmount(
-  //             parseFloat(battle.room.room_amount),
-  //             adminDetails
-  //           )}
-  //         </Typography>
-  //       </Box>
-  //       <Box
-  //         sx={{
-  //           display: "flex",
-  //           justifyContent: "space-between",
-  //           alignItems: "center",
-  //           mt: 2,
-  //         }}
-  //       >
-  //         <Box
-  //           sx={{
-  //             display: "flex",
-  //             flexDirection: "column",
-  //             alignItems: "center",
-  //           }}
-  //         >
-  //           <Avatar>{battle.created_by.username[0]}</Avatar>
-  //           <Typography variant="body2" className="text-wrapper-battle">
-  //             {battle.created_by.username}
-  //           </Typography>
-  //         </Box>
-  //         <Box
-  //           sx={{
-  //             display: "flex",
-  //             flexDirection: "column",
-  //             alignItems: "center",
-  //           }}
-  //         >
-  //           <FlashOnIcon color="error" />
-  //           <Typography variant="body2">V/S</Typography>
-  //         </Box>
-  //         <Box
-  //           sx={{
-  //             display: "flex",
-  //             flexDirection: "column",
-  //             alignItems: "center",
-  //           }}
-  //         >
-  //           <Avatar>
-  //             {battle.opponent ? battle.opponent.username[0] : "?"}
-  //           </Avatar>
-  //           <Typography variant="body2" className="text-wrapper-battle">
-  //             {battle.opponent ? battle.opponent.username : "Waiting..."}
-  //           </Typography>
-  //         </Box>
-  //       </Box>
-  //       {getUserIdFromSessionStorage() === battle.created_by.id ? (
-  //         <>
-  //           <div
-  //             style={{
-  //               display: "flex",
-  //               gap: "5px",
-  //               alignItems: "stretch",
-  //               justifyContent: "center",
-  //             }}
-  //           >
-  //             <TextField
-  //               label="Room ID Update"
-  //               placeholder="Enter Room Id"
-  //               variant="outlined"
-  //               value={roomIdInput}
-  //               onChange={handleRoomIdInputChange}
-  //               sx={{ mt: 2 }}
-  //               required
-  //             />
-  //             <Button
-  //               variant="contained"
-  //               onClick={handleUpdateRoomId}
-  //               sx={{ mt: 2 }}
-  //               disabled={!roomIdInput.trim()}
-  //             >
-  //               Submit
-  //             </Button>
-  //             {/* <Button
-  //               variant="contained"
-  //               color="primary"
-  //               onClick={() => handleStartBattle(battle)}
-  //             >
-  //               Start
-  //             </Button> */}
-  //           </div>
-  //         </>
-  //       ) : (
-  //         <>
-  //           <Box
-  //             sx={{
-  //               display: "flex",
-  //               flexDirection: "column",
-  //               alignItems: "center",
-  //               mt: 4,
-  //             }}
-  //           >
-  //             <CircularProgress />
-  //             <Typography variant="body2" className="text-wrapper-battle">
-  //               Waiting to start.....
-  //             </Typography>
-  //           </Box>
-  //         </>
-  //       )}
-
-  //       {/* <Button
-  //       fullWidth
-  //       variant="contained"
-  //       color="primary"
-  //       onClick={() => handleSubmitResult(battle.challenge_id)}
-  //       sx={{ mt: 2 }}
-  //     >
-  //       Upload Screenshot
-  //     </Button> */}
-  //     </Paper>
-  //   );
-  // };
 
   const PendingBattleCard = ({ battle }) => {
-    const id = getUserIdFromSessionStorage();
+    const id = getUserIdFromCookie();
     return (
       <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
         <Box
@@ -831,11 +555,7 @@ const CreateBattle = () => {
             Amount: 💰 {parseFloat(battle.room.room_amount).toFixed(2)}
           </Typography>
           <Typography variant="body2">
-            Prize: 💰{" "}
-            {calculateWinningAmount(
-              parseFloat(battle.room.room_amount),
-              adminDetails
-            )}
+            Prize: 💰 {parseFloat(battle.room.winning_amount).toFixed(2)}
           </Typography>
         </Box>
         <Box
@@ -901,15 +621,6 @@ const CreateBattle = () => {
             </Button>
           )}
         </div>
-        {/* <Button
-        fullWidth
-        variant="contained"
-        color="primary"
-        onClick={() => handleSubmitResult(battle.challenge_id)}
-        sx={{ mt: 2 }}
-      >
-        Upload Screenshot
-      </Button> */}
       </Paper>
     );
   };
@@ -929,7 +640,7 @@ const CreateBattle = () => {
       return;
     }
 
-    const currentUserId = getUserIdFromSessionStorage();
+    const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setError("User ID not found. Please try logging in again.");
       return;
@@ -953,7 +664,6 @@ const CreateBattle = () => {
       }
 
       const data = await response.json();
-      // console.log("Result submitted successfully:", data);
       setIsResultModalOpen(false);
       setSelectedFile(null);
       setGameOutcome("");
@@ -988,9 +698,9 @@ const CreateBattle = () => {
             marginTop: "10px",
           }}
         >
-          चेतावनी: सभी उपयोगकर्ता खेल समाप्त होने के बाद win/loss का परिणाम अवश्य
-          सबमिट करें। परिणाम सबमिट न करने या गलत परिणाम सबमिट करने पर 50 रुपये
-          की पेनल्टी लगा दी जाएगी।
+          चेतावनी: सभी उपयोगकर्ता खेल समाप्त होने के बाद win/loss का परिणाम
+          अवश्य सबमिट करें। परिणाम सबमिट न करने या गलत परिणाम सबमिट करने पर 50
+          रुपये की पेनल्टी लगा दी जाएगी।
         </div>
       </div>
       <Paper
@@ -1004,9 +714,6 @@ const CreateBattle = () => {
           alignItems: "center",
         }}
       >
-        {/* <div style={{display:"flex", justifyContent:"center",margin:"10px 0 10px 0"}}>
-          <img src="/bg.jpg" width={300} height={200} style={{borderRadius:"5px"}} />
-        </div> */}
         <Typography variant="h5" gutterBottom align="center">
           Create a battle
         </Typography>
@@ -1075,34 +782,14 @@ const CreateBattle = () => {
             <Typography
               variant="h5"
               gutterBottom
-              sx={{ display: "flex", alignItems: "center" }}
+              sx={{ display: "flex", alignItems: "center", fontSize: "18px" }}
             >
-              <FlashOnIcon sx={{ mr: 1 }} /> Open Battles
+              <FlashOnIcon sx={{ mr: 1 }} /> <b> Open Battles</b>
             </Typography>
             {openBattles.map((battle) => (
               <OpenBattleCard key={battle.challenge_id} battle={battle} />
             ))}
           </Paper>
-
-          {/* <Paper
-            elevation={3}
-            sx={{ p: 3, width: "90%", margin: "auto", mt: 4, padding: "10px" }}
-          >
-            <Typography
-              variant="h5"
-              gutterBottom
-              sx={{ display: "flex", alignItems: "center" }}
-            >
-              <FlashOnIcon sx={{ mr: 1 }} /> Active Battles
-            </Typography>
-            {startedBattles
-              // .filter(
-              //   (battle) => getUserIdFromSessionStorage() != battle.created_by.id
-              // )
-              .map((battle) => (
-                <StartedBattleCard key={battle.challenge_id} battle={battle} />
-              ))}
-          </Paper> */}
 
           <Paper
             elevation={3}
@@ -1111,9 +798,10 @@ const CreateBattle = () => {
             <Typography
               variant="h5"
               gutterBottom
-              sx={{ display: "flex", alignItems: "center" }}
+              sx={{ display: "flex", alignItems: "center", fontSize: "18px" }}
             >
-              <FlashOnIcon sx={{ mr: 1 }} /> Running Battles
+              <FlashOnIcon sx={{ mr: 1 }} />
+              <b> Running Battles</b>
             </Typography>
             {runningBattles.map((battle) => (
               <RunningBattleCard key={battle.challenge_id} battle={battle} />
@@ -1127,9 +815,10 @@ const CreateBattle = () => {
             <Typography
               variant="h5"
               gutterBottom
-              sx={{ display: "flex", alignItems: "center" }}
+              sx={{ display: "flex", alignItems: "center", fontSize: "18px" }}
             >
-              <FlashOnIcon sx={{ mr: 1 }} /> Pending Results
+              <FlashOnIcon sx={{ mr: 1 }} />
+              <b>Pending Results </b>
             </Typography>
             {pendingBattles.map((battle) => (
               <PendingBattleCard key={battle.challenge_id} battle={battle} />

@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/router";
 import axios from "axios";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -104,7 +105,6 @@ const LoginForm = () => {
         setVerified(true);
         setError("");
         setOtpMessage("OTP verified successfully");
-
         // Send POST request to backend
         try {
           const backendResponse = await axios.post(
@@ -116,21 +116,29 @@ const LoginForm = () => {
           );
 
           // Store the backend response in session storage
-          sessionStorage.setItem(
-            "userData",
-            JSON.stringify(backendResponse.data)
-          );
+          const userData = JSON.stringify(backendResponse.data);
+          sessionStorage.setItem("userData", userData);
+
+          // Store the backend response in cookies
+          Cookies.set("userData", userData, { expires: 7 }); // Expires in 7 days
+
           console.log(
             "Stored session data:",
             sessionStorage.getItem("userData")
           );
+
+          // Retrieve and decode cookie data
+          const cookieData = Cookies.get("userData");
+          const decodedCookieData = cookieData
+            ? JSON.parse(decodeURIComponent(cookieData))
+            : null;
+          console.log("Stored and decoded cookie data:", decodedCookieData);
 
           // Redirect to home page or dashboard
           router.push("/");
         } catch (backendError) {
           console.error("Backend verification error:", backendError);
           setError("Please register first.");
-          // setError("Failed to verify with backend. Please try again.");
         }
       } else {
         // Handle the case of incorrect OTP
@@ -157,6 +165,12 @@ const LoginForm = () => {
       }
       setOtpMessage("Error verifying OTP");
     }
+  };
+
+  // Function to retrieve and decode cookie data
+  const getDecodedCookieData = () => {
+    const cookieData = Cookies.get("userData");
+    return cookieData ? JSON.parse(decodeURIComponent(cookieData)) : null;
   };
 
   const steps = ["Enter Phone Number", "Enter OTP"];
@@ -261,7 +275,7 @@ const LoginForm = () => {
                 <Button
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 ,background:"black"}}
+                  sx={{ mt: 3, mb: 2, background: "black" }}
                   onClick={verifyOtp}
                   disabled={otp.length !== 4 || verified}
                 >
