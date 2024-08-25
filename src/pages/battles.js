@@ -542,6 +542,10 @@ const CreateBattle = () => {
 
   const PendingBattleCard = ({ battle }) => {
     const id = getUserIdFromCookie();
+    if (id != battle.created_by.id && id != battle.opponent.id) {
+      return null;
+    }
+
     return (
       <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
         <Box
@@ -571,6 +575,7 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              textAlign: "center",
             }}
           >
             <Avatar>{battle.created_by.username[0]}</Avatar>
@@ -593,6 +598,7 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              textAlign: "center",
             }}
           >
             <Avatar>{battle.opponent.username[0]}</Avatar>
@@ -606,7 +612,12 @@ const CreateBattle = () => {
           Status: Pending Result
         </Typography>
         <div
-          style={{ display: "flex", justifyContent: "center", width: "100%" }}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+            marginTop: "5px",
+          }}
         >
           {(id == battle.created_by.id || id == battle.opponent.id) && (
             <Button
