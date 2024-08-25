@@ -707,6 +707,7 @@ const CreateBattle = () => {
             textAlign: "center",
             borderRadius: "20px",
             marginTop: "10px",
+            padding:"10px"
           }}
         >
           चेतावनी: सभी उपयोगकर्ता खेल समाप्त होने के बाद win/loss का परिणाम

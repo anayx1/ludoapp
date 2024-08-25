@@ -199,10 +199,11 @@ const BattleModal = ({
             </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography>RoomCode</Typography>
+            <Typography>Room Code</Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography>{selectedChallenge.challenge_id}</Typography>
+            <Typography>{selectedChallenge?.room?.room_id}</Typography>
+            {console.log(selectedChallenge,"asfsdf")}
           </Grid>
           <Grid item xs={6}>
             <Typography>Amount</Typography>
