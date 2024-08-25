@@ -11,6 +11,7 @@ import {
   Input,
 } from "@mui/material";
 import Sidebar from "@/components/admin/AdminSidebar";
+import withAdminAuth from "@/components/withAdminAuth";
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -313,4 +314,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
+export default withAdminAuth(SettingsPage);

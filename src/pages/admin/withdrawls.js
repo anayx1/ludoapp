@@ -22,6 +22,7 @@ import {
 import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import CloseIcon from "@mui/icons-material/Close";
+import withAdminAuth from "@/components/withAdminAuth";
 
 const WithdrawalsComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -363,4 +364,4 @@ const WithdrawalsComponent = () => {
   );
 };
 
-export default WithdrawalsComponent;
+export default withAdminAuth(WithdrawalsComponent);

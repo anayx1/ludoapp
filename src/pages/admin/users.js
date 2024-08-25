@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import Sidebar from "@/components/admin/AdminSidebar";
+import withAdminAuth from "@/components/withAdminAuth";
 
 const UserComponent = () => {
   const [userData, setUserData] = useState([]);
@@ -115,4 +116,4 @@ const UserComponent = () => {
   );
 };
 
-export default UserComponent;
+export default withAdminAuth(UserComponent);

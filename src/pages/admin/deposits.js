@@ -19,6 +19,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import withAdminAuth from "@/components/withAdminAuth";
+
 
 const DepositComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -480,4 +482,4 @@ const DepositComponent = () => {
   );
 };
 
-export default DepositComponent;
+export default withAdminAuth(DepositComponent);

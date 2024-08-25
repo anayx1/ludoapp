@@ -3,6 +3,8 @@ import axios from "axios";
 import Sidebar from "@/components/admin/AdminSidebar";
 import Styles from "@/styles/adminDashboard.module.css";
 import { useRouter } from "next/router";
+import withAdminAuth from "@/components/withAdminAuth";
+
 
 const Dashboard = () => {
   const [commissionData, setCommissionData] = useState({});
@@ -224,4 +226,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default withAdminAuth(Dashboard);
