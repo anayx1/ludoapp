@@ -12,6 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const LoginFormAdmin = () => {
   const router = useRouter();
@@ -57,14 +58,19 @@ const LoginFormAdmin = () => {
         ) {
           // Successful login
           console.log("Login successful");
-          // Store response in session storage
-          sessionStorage.setItem("userData", JSON.stringify(response.data));
-          // Log session data
-          console.log(
-            "Stored session data:",
-            sessionStorage.getItem("userData")
-          );
-          // Redirect to homepage
+
+          // Store response in cookies
+          const userData = JSON.stringify(response.data);
+          Cookies.set("userData", userData, { expires: 7 }); // Expires in 7 days
+
+          // Log cookie data
+          const cookieData = Cookies.get("userData");
+          const decodedCookieData = cookieData
+            ? JSON.parse(decodeURIComponent(cookieData))
+            : null;
+          console.log("Stored and decoded cookie data:", decodedCookieData);
+
+          // Redirect to admin dashboard
           router.push("/admin/dashboard");
         } else {
           // Handle unsuccessful login
@@ -86,20 +92,6 @@ const LoginFormAdmin = () => {
 
   return (
     <>
-      {/* <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          backgroundColor: "#ee4444",
-          color: "white",
-          height: "auto",
-          textAlign: "center",
-        }}
-      >
-        Admin Commission: 3% & Referral Commission: 2%
-      </div> */}
       <div
         style={{
           display: "flex",

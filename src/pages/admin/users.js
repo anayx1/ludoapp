@@ -10,7 +10,9 @@ import {
   Paper,
   Typography,
   TextField,
+  Button,
 } from "@mui/material";
+import { useRouter } from "next/router";
 import axios from "axios";
 import Sidebar from "@/components/admin/AdminSidebar";
 import withAdminAuth from "@/components/withAdminAuth";
@@ -18,6 +20,7 @@ import withAdminAuth from "@/components/withAdminAuth";
 const UserComponent = () => {
   const [userData, setUserData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -43,6 +46,10 @@ const UserComponent = () => {
       )
     );
   }, [userData, searchTerm]);
+
+  const handleViewDetails = (userId) => {
+    router.push(`/admin/userDetail/`);
+  };
 
   return (
     <>
@@ -84,6 +91,7 @@ const UserComponent = () => {
                   <TableCell>Last Name</TableCell>
                   <TableCell>Verified</TableCell>
                   <TableCell>KYC</TableCell>
+                  <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -98,11 +106,21 @@ const UserComponent = () => {
                       <TableCell>{user.last_name}</TableCell>
                       <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                       <TableCell>{user.kyc ? "Yes" : "No"}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          // onClick={() => handleViewDetails(user.id)}
+                          onClick={handleViewDetails}
+                          >
+                          View Details
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={9} align="center">
                       No data
                     </TableCell>
                   </TableRow>
