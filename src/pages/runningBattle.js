@@ -20,6 +20,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
+import { io } from "socket.io-client";
 
 const RunningBattle = () => {
   const router = useRouter();
@@ -35,17 +36,10 @@ const RunningBattle = () => {
 
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
 
-  useEffect(() => {
-    if (id) {
-      fetchBattleDetails();
-    }
-  }, [id]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
 
-  useEffect(() => {
-    if (!isLoading && !battleDetails) {
-      router.push("/battles");
-    }
-  }, [isLoading, battleDetails, router]);
+  const [socket, setSocket] = useState(null);
 
   const fetchBattleDetails = async () => {
     setIsLoading(true);
@@ -75,6 +69,67 @@ const RunningBattle = () => {
     }
   };
 
+  const setSocketIo = () => {
+    const socketIo = io();
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      setTransport(socketIo.io.engine.transport.name);
+
+      socketIo.io.engine.on("upgrade", (transport) => {
+        setTransport(transport.name);
+      });
+
+      socketIo.emit("user-joined", userId);
+
+      socketIo.on("room-id-created", (data) => {
+        if (id === data) {
+          fetchBattleDetails();
+        }
+      });
+
+      socketIo.on("battle-cancel", (data) => {
+        if (id === data) {
+          router.push("/battles");
+        }
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    setSocketIo();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (id) {
+      fetchBattleDetails();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (!isLoading && !battleDetails) {
+      router.push("/battles");
+    }
+  }, [isLoading, battleDetails, router]);
+
   const handleRoomIdInputChange = (event) => {
     setRoomIdInput(event.target.value);
   };
@@ -96,7 +151,9 @@ const RunningBattle = () => {
       );
 
       if (!response.ok) throw new Error("Failed to update room ID");
-
+      if(socket){
+        socket.emit("room-id-created", id);
+      }
       await fetchBattleDetails(); // Refresh battle details
     } catch (error) {
       console.error("Error updating room ID:", error);
@@ -145,6 +202,9 @@ const RunningBattle = () => {
       console.log("Result submitted successfully:", data);
       setSelectedFile(null);
       setGameOutcome("");
+      if(socket){
+        socket.emit("battle-result", id);
+      }
       await fetchBattleDetails(); // Refresh battle details
     } catch (error) {
       console.error("Error submitting result:", error);
@@ -174,7 +234,9 @@ const RunningBattle = () => {
       );
 
       if (!response.ok) throw new Error("Failed to cancel battle");
-
+      if (socket) {
+        socket.emit("battle-cancel", id);
+      }
       router.push("/battles");
     } catch (error) {
       console.error("Error cancelling battle:", error);

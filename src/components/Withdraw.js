@@ -64,11 +64,8 @@ const Withdraw = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
 
-  const router = useRouter();
-
-  useEffect(() => {
-    fetchUserDetails();
-  }, []);
+    const [socket, setSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
@@ -105,6 +102,44 @@ const Withdraw = () => {
       setOpen(true);
     }
   };
+
+    const setSocketIo = () => {
+      const socketIo = io();
+      setSocket(socketIo);
+      if (socketIo.connected) {
+        onConnect();
+      }
+
+      function onConnect() {
+        setIsConnected(true);
+
+        socketIo.emit("user-joined", "admin");
+
+        socketIo.on("update-stats", () => {
+          fetchKycData();
+        });
+      }
+
+      function onDisconnect() {
+        setIsConnected(false);
+        setTransport("N/A");
+      }
+
+      socketIo.on("connect", onConnect);
+      socketIo.on("disconnect", onDisconnect);
+    };
+
+    useEffect(() => {
+      setSocketIo();
+      fetchUserDetails();
+      return () => {
+        if (socket) {
+          socket.off("connect", onConnect);
+          socket.off("disconnect", onDisconnect);
+        }
+      };
+    }, []);
+  const router = useRouter();
 
   const handleTabChange = (event, newIndex) => {
     setTabIndex(newIndex);
