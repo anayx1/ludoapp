@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
@@ -25,6 +26,7 @@ import {
 } from "@mui/material";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
+import { io } from "socket.io-client";
 
 const CreateBattle = () => {
   const [amount, setAmount] = useState("");
@@ -52,6 +54,69 @@ const CreateBattle = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const router = useRouter();
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
+  
+  const [socket, setSocket] = useState(null);
+  
+  const setSocketIo = () => {
+    const socketIo = io();
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      setTransport(socketIo.io.engine.transport.name);
+
+      socketIo.io.engine.on("upgrade", (transport) => {
+        setTransport(transport.name);
+      });
+
+      socketIo.emit("user-joined", userId);
+
+      socketIo.on("battle-joined", (data) => {
+        console.log("Battle joined--------", data);
+        fetchBattles();
+      });
+
+      socketIo.on("battle-created", (data) => {
+        console.log("Battle created", data);
+        fetchBattles();
+      });
+
+      socketIo.on("battle-cancel", (data) => {
+        console.log("Battle cancel", data);
+        fetchBattles();
+      });
+
+      socketIo.on("battle-result", (data) => {
+        console.log("Battle result", data);
+        fetchBattles();
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+
+  }
+
+  useEffect(() => {
+    setSocketIo();
+    return () => {
+      if(socket){
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     fetchBattles();
@@ -211,6 +276,8 @@ const CreateBattle = () => {
       const data = await response.json();
       console.log("Room created successfully:", data);
       setCreatedRoomId(data.room_id);
+      socket && socket.emit("battle-created", JSON.stringify(data));
+
       window.location.reload();
     } catch (error) {
       console.error("Error creating room:", error);
@@ -268,6 +335,7 @@ const CreateBattle = () => {
   const handleJoinBattleClick = (battle) => {
     setSelectedBattle(battle);
     setJoinModalOpen(true);
+    socket && socket.emit("battle-joined", JSON.stringify(battle));
   };
 
   const handleStartBattle = async (battle) => {
@@ -349,7 +417,7 @@ const CreateBattle = () => {
 
       const makeRunningData = await makeRunningResponse.json();
       console.log("Challenge set to running:", makeRunningData);
-
+      socket && socket.emit("battle-joined", JSON.stringify({userId: currentUserId}));
       setCreatedRoomId(joinData.room_id);
       setJoinModalOpen(false);
       fetchBattles();
@@ -377,6 +445,7 @@ const CreateBattle = () => {
       }
 
       console.log(`Battle with ID: ${challengeId} cancelled successfully`);
+      socket && socket.emit("battle-cancel", challengeId);
       fetchBattles();
       window.location.reload();
     } catch (error) {

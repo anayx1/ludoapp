@@ -26,6 +26,7 @@ import {
   Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { io } from "socket.io-client";
 
 const BattleModal = ({
   isOpen,
@@ -387,7 +388,8 @@ const BattlesComponent = ({ initialTab = 0 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [selectedWinner, setSelectedWinner] = useState("");
-
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const showActionColumn = tabValue == 3 || tabValue === 1; // Show only for Pending tab
 
   const fetchChallenges = async () => {
@@ -403,6 +405,42 @@ const BattlesComponent = ({ initialTab = 0 }) => {
       setIsLoading(false);
     }
   };
+
+  const setSocketIo = () => {
+    const socketIo = io();
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+
+      socketIo.emit("user-joined", "admin");
+
+      socketIo.on("update-stats", () => {
+        fetchChallenges();
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    setSocketIo();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      }
+    };
+  }, []);
   useEffect(() => {
     // Update the tab value if it's passed in the URL
     const { tab } = router.query;

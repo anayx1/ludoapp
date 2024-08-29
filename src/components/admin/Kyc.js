@@ -17,6 +17,7 @@ import {
   TextField,
 } from "@mui/material";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 const KYCComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -27,6 +28,9 @@ const KYCComponent = () => {
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   const fetchKycData = async () => {
     try {
@@ -46,8 +50,42 @@ const KYCComponent = () => {
     }
   };
 
+
+  const setSocketIo = () => {
+    const socketIo = io();
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+
+      socketIo.emit("user-joined", "admin");
+
+      socketIo.on("update-stats", () => {
+        fetchKycData();
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
   useEffect(() => {
+    setSocketIo();
     fetchKycData();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      }
+    };
   }, []);
 
   const handleTabChange = (event, newValue) => {

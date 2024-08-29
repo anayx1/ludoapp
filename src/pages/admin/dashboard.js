@@ -3,8 +3,8 @@ import axios from "axios";
 import Sidebar from "@/components/admin/AdminSidebar";
 import Styles from "@/styles/adminDashboard.module.css";
 import { useRouter } from "next/router";
+import { io } from "socket.io-client";
 import withAdminAuth from "@/components/withAdminAuth";
-
 
 const Dashboard = () => {
   const [commissionData, setCommissionData] = useState({});
@@ -14,47 +14,86 @@ const Dashboard = () => {
   const [userBalance, setUserBalance] = useState({});
   const router = useRouter();
 
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      // Fetch commission data
+      const commissionResponse = await axios.get(
+        `https://ludotest.pythonanywhere.com/panel/get-commisions/`
+      );
+      // console.log("Commission Data:", commissionResponse.data);
+      setCommissionData(commissionResponse.data);
+
+      // Fetch deposit data
+      const depositResponse = await axios.get(
+        `https://ludotest.pythonanywhere.com/panel/total-deposits/`
+      );
+      // console.log("Deposit Data:", depositResponse.data);
+      setDepositData(depositResponse.data);
+
+      // Fetch withdrawal data
+      const withdrawalResponse = await axios.get(
+        `https://ludotest.pythonanywhere.com/panel/total-withdrawals/`
+      );
+      // console.log("Withdrawal Data:", withdrawalResponse.data);
+      setWithdrawalData(withdrawalResponse.data);
+
+      const userBalance = await axios.get(
+        `https://ludotest.pythonanywhere.com/panel/get-user-total/`
+      );
+      // console.log("Withdrawal Data:", withdrawalResponse.data);
+      setUserBalance(userBalance.data);
+
+      // Fetch battle data
+      const battleResponse = await axios.get(
+        `https://ludotest.pythonanywhere.com/panel/number-of-games/`
+      );
+      // console.log("Battle Data:", battleResponse.data);
+      setBattleData(battleResponse.data);
+    } catch (error) {
+      // console.error("Error fetching data:", error);
+    }
+  };
+
+  const setSocketIo = () => {
+    const socketIo = io();
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+
+      socketIo.emit("user-joined", "admin");
+
+      socketIo.on("update-stats", () => {
+        fetchData();
+      });
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      setTransport("N/A");
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch commission data
-        const commissionResponse = await axios.get(
-          `https://ludotest.pythonanywhere.com/panel/get-commisions/`
-        );
-        // console.log("Commission Data:", commissionResponse.data);
-        setCommissionData(commissionResponse.data);
-
-        // Fetch deposit data
-        const depositResponse = await axios.get(
-          `https://ludotest.pythonanywhere.com/panel/total-deposits/`
-        );
-        // console.log("Deposit Data:", depositResponse.data);
-        setDepositData(depositResponse.data);
-
-        // Fetch withdrawal data
-        const withdrawalResponse = await axios.get(
-          `https://ludotest.pythonanywhere.com/panel/total-withdrawals/`
-        );
-        // console.log("Withdrawal Data:", withdrawalResponse.data);
-        setWithdrawalData(withdrawalResponse.data);
-
-        const userBalance = await axios.get(
-          `https://ludotest.pythonanywhere.com/panel/get-user-total/`
-        );
-        // console.log("Withdrawal Data:", withdrawalResponse.data);
-        setUserBalance(userBalance.data);
-
-        // Fetch battle data
-        const battleResponse = await axios.get(
-          `https://ludotest.pythonanywhere.com/panel/number-of-games/`
-        );
-        // console.log("Battle Data:", battleResponse.data);
-        setBattleData(battleResponse.data);
-      } catch (error) {
-        // console.error("Error fetching data:", error);
+    setSocketIo();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
       }
     };
+  }, []);
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -80,8 +119,7 @@ const Dashboard = () => {
   const pendingbattles = () => {
     router.push("/admin/battles?tab=3");
   };
-  const withdrawals
-  = () => {
+  const withdrawals = () => {
     router.push("/admin/withdrawls");
   };
 
