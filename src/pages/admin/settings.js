@@ -9,8 +9,11 @@ import {
   Button,
   Snackbar,
   Input,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import Sidebar from "@/components/admin/AdminSidebar";
+import withAdminAuth from "@/components/withAdminAuth";
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -24,11 +27,13 @@ const SettingsPage = () => {
     upi_id: "",
     whatsapp_number: "",
   });
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [upiQrFile, setUpiQrFile] = useState(null);
 
   useEffect(() => {
     fetchAdminDetails();
+    fetchMaintenanceStatus();
   }, []);
 
   const toDecimal = (value) => {
@@ -65,6 +70,22 @@ const SettingsPage = () => {
       }
     } catch (error) {
       console.error("Error fetching admin details:", error);
+    }
+  };
+
+  const fetchMaintenanceStatus = async () => {
+    try {
+      const response = await fetch(
+        "https://ludotest.pythonanywhere.com/maintainance/check/"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setMaintenanceMode(data.maintenance);
+      } else {
+        console.error("Failed to fetch maintenance status");
+      }
+    } catch (error) {
+      console.error("Error fetching maintenance status:", error);
     }
   };
 
@@ -169,6 +190,34 @@ const SettingsPage = () => {
     } catch (error) {
       console.error("Error updating WhatsApp number:", error);
       setSnackbar({ open: true, message: "Error updating WhatsApp number" });
+    }
+  };
+
+  const handleMaintenanceToggle = async () => {
+    const newMaintenanceState = !maintenanceMode;
+    const url = newMaintenanceState
+      ? "https://ludotest.pythonanywhere.com/maintainance/turn-on/"
+      : "https://ludotest.pythonanywhere.com/maintainance/turn-off/";
+
+    try {
+      const response = await fetch(url, { method: "POST" });
+      if (response.ok) {
+        setMaintenanceMode(newMaintenanceState);
+        setSnackbar({
+          open: true,
+          message: `Maintenance mode ${
+            newMaintenanceState ? "activated" : "deactivated"
+          }`,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Failed to update maintenance mode",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating maintenance mode:", error);
+      setSnackbar({ open: true, message: "Error updating maintenance mode" });
     }
   };
 
@@ -301,6 +350,17 @@ const SettingsPage = () => {
               Update WhatsApp
             </Button>
           </Box>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={maintenanceMode}
+                onChange={handleMaintenanceToggle}
+                color="primary"
+              />
+            }
+            label="Maintenance Mode"
+            sx={{ mt: 2,mb:10 }}
+          />
         </Paper>
       </Container>
       <Snackbar
@@ -313,4 +373,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
+export default withAdminAuth(SettingsPage);

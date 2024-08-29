@@ -1,17 +1,39 @@
 {
-    "name": "Aonle Ludo App",
-    "short_name": "AoneLudo App",
-    "icons": [
-      {
-        "src": "/logo_ludo.webp",
-        "sizes": "300x300",
-        "type": "image/png",
-        "purpose": "any maskable"
-      }
-    ],
-    "theme_color": "#FFFFFF",
-    "background_color": "#FFFFFF",
-    "start_url": "/",
-    "display": "standalone",
-    "orientation": "portrait"
-  }
+  "name": "Aone Ludo App",
+  "short_name": "AoneLudo",
+  "icons": [
+    {
+      "src": "/logo_ludo.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo_ludo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.webp",
+      "sizes": "1920x1080",
+      "type": "image/webp",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    }
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Most trusted ludo platform"
+}

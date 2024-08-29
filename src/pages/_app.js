@@ -6,6 +6,13 @@ import Head from "next/head";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
+if (typeof window !== "undefined") {
+  window.deferredInstallPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    window.deferredInstallPrompt = e;
+  });
+}
 const poppins = Poppins({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
