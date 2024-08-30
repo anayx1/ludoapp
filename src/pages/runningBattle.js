@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import {
   Box,
   Typography,
-  Avatar,
   Button,
   TextField,
   CircularProgress,
@@ -32,8 +31,15 @@ const RunningBattle = () => {
   const [gameOutcome, setGameOutcome] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [cancellationReason, setCancellationReason] = useState("");
+  const [showCancellationReasons, setShowCancellationReasons] = useState(false);
 
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
+
+  const getRandomAvatar = () => {
+    const avatars = ["a1", "a2", "a3", "a4"];
+    const randomIndex = Math.floor(Math.random() * avatars.length);
+    return `/${avatars[randomIndex]}.svg`;
+  };
 
   useEffect(() => {
     if (id) {
@@ -120,14 +126,16 @@ const RunningBattle = () => {
   };
 
   const handleUploadScreenshot = async () => {
-    if (!selectedFile || !gameOutcome) {
-      setError("Please select a file and game outcome");
+    if (gameOutcome === "W" && !selectedFile) {
+      setError("Please select a file for the winning screenshot");
       return;
     }
 
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append("screenshot", selectedFile);
+    if (gameOutcome === "W") {
+      formData.append("screenshot", selectedFile);
+    }
     formData.append("status", gameOutcome);
 
     try {
@@ -151,6 +159,14 @@ const RunningBattle = () => {
       setError("Failed to submit result. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelButtonClick = () => {
+    if (!showCancellationReasons) {
+      setShowCancellationReasons(true);
+    } else {
+      handleCancelBattle();
     }
   };
 
@@ -234,9 +250,12 @@ const RunningBattle = () => {
           >
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
-                <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-                  {battleDetails?.created_by.username[0]}
-                </Avatar>
+                <img
+                  src={getRandomAvatar()}
+                  alt="Avatar"
+                  width="50"
+                  height="50"
+                />
                 <Typography variant="h6">
                   {battleDetails?.created_by.username}
                 </Typography>
@@ -249,9 +268,12 @@ const RunningBattle = () => {
             </Grid>
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
-                <Avatar sx={{ width: 80, height: 80, margin: "0 auto" }}>
-                  {battleDetails?.opponent?.username[0]}
-                </Avatar>
+                <img
+                  src={getRandomAvatar()}
+                  alt="Avatar"
+                  width="60"
+                  height="60"
+                />
                 <Typography variant="h6">
                   {battleDetails?.opponent?.username}
                 </Typography>
@@ -352,39 +374,49 @@ const RunningBattle = () => {
                       />
                     </RadioGroup>
                   </FormControl>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    id="screenshot-upload"
-                  />
-                  <label htmlFor="screenshot-upload">
-                    <Button
-                      variant="contained"
-                      component="span"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                    >
-                      Choose Screenshot
-                    </Button>
-                  </label>
-                  {selectedFile && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Selected file: {selectedFile.name}
-                    </Typography>
+
+                  {gameOutcome === "W" && (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                        id="screenshot-upload"
+                      />
+                      <label htmlFor="screenshot-upload">
+                        <Button
+                          variant="contained"
+                          component="span"
+                          fullWidth
+                          sx={{ mt: 2 }}
+                        >
+                          Choose Screenshot
+                        </Button>
+                      </label>
+                      {selectedFile && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Selected file: {selectedFile.name}
+                        </Typography>
+                      )}
+                    </>
                   )}
+
                   <Button
                     fullWidth
                     variant="contained"
                     onClick={handleUploadScreenshot}
                     sx={{ mt: 2 }}
-                    disabled={isSubmitting || !selectedFile || !gameOutcome}
+                    disabled={
+                      isSubmitting ||
+                      !gameOutcome ||
+                      (gameOutcome === "W" && !selectedFile)
+                    }
                   >
                     {isSubmitting ? (
                       <CircularProgress size={24} />
                     ) : (
-                      "Upload Screenshot"
+                      "Submit Result"
                     )}
                   </Button>
                 </Box>
@@ -392,15 +424,9 @@ const RunningBattle = () => {
 
               {userResult && (
                 <Box sx={{ mt: 3, textAlign: "center" }}>
-                  <Typography variant="h6">
-                    Your Result: {userResult === "W" ? "Won" : "Lost"}
+                  <Typography variant="h6" gutterBottom>
+                    Contact Admin for Result
                   </Typography>
-                  {opponentResult && (
-                    <Typography variant="h6">
-                      Opponent's Result:{" "}
-                      {opponentResult === "W" ? "Won" : "Lost"}
-                    </Typography>
-                  )}
                   {!opponentResult && (
                     <Typography variant="body1">
                       Waiting for opponent to submit their result...
@@ -441,36 +467,47 @@ const RunningBattle = () => {
 
           {shouldShowCancelButton && (
             <Box sx={{ mt: 3 }}>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <Select
-                  value={cancellationReason}
-                  onChange={(e) => setCancellationReason(e.target.value)}
-                  displayEmpty
-                  inputProps={{ "aria-label": "Cancel reason" }}
-                >
-                  <MenuItem value="" disabled>
-                    Select cancellation reason
-                  </MenuItem>
-                  <MenuItem value="No room code">No room code</MenuItem>
-                  <MenuItem value="Game not Started">Game not Started</MenuItem>
-                  <MenuItem value="Not Joined">Not Joined</MenuItem>
-                  <MenuItem value="Not Playing">Not Playing</MenuItem>
-                  <MenuItem value="Dont want to play">
-                    Don't want to play
-                  </MenuItem>
-                  <MenuItem value="Opponent abusing">Opponent abusing</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
-                </Select>
-              </FormControl>
+              {showCancellationReasons && (
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <Select
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    displayEmpty
+                    inputProps={{ "aria-label": "Cancel reason" }}
+                  >
+                    <MenuItem value="" disabled>
+                      Select cancellation reason
+                    </MenuItem>
+                    <MenuItem value="No room code">No room code</MenuItem>
+                    <MenuItem value="Game not Started">
+                      Game not Started
+                    </MenuItem>
+                    <MenuItem value="Not Joined">Not Joined</MenuItem>
+                    <MenuItem value="Not Playing">Not Playing</MenuItem>
+                    <MenuItem value="Dont want to play">
+                      Don't want to play
+                    </MenuItem>
+                    <MenuItem value="Opponent abusing">
+                      Opponent abusing
+                    </MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
               <Button
                 fullWidth
                 variant="contained"
                 color="secondary"
-                onClick={handleCancelBattle}
-                disabled={isSubmitting || !cancellationReason}
+                onClick={handleCancelButtonClick}
+                disabled={
+                  isSubmitting ||
+                  (showCancellationReasons && !cancellationReason)
+                }
               >
                 {isSubmitting ? (
                   <CircularProgress size={24} />
+                ) : showCancellationReasons ? (
+                  "Confirm Cancellation"
                 ) : (
                   "Cancel Battle"
                 )}

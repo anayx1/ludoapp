@@ -67,10 +67,46 @@ const CreateBattle = () => {
       );
       const data = await response.json();
       if (data.error === false) {
-        setOpenBattles(data.open_challenges);
-        setRunningBattles(data.running_challenges);
-        setPendingBattles(data.pending_challenges || []);
-        setStartedBattles(data.started_challenges);
+        const currentUserId = getUserIdFromCookie();
+
+        // Sort running battles
+        const sortedRunningBattles = (data.running_challenges || []).sort(
+          (a, b) => {
+            const aInvolvement =
+              a.created_by.id === currentUserId ||
+              a.opponent?.id === currentUserId
+                ? 1
+                : 0;
+            const bInvolvement =
+              b.created_by.id === currentUserId ||
+              b.opponent?.id === currentUserId
+                ? 1
+                : 0;
+            return bInvolvement - aInvolvement;
+          }
+        );
+
+        // Sort pending battles
+        const sortedPendingBattles = (data.pending_challenges || []).sort(
+          (a, b) => {
+            const aInvolvement =
+              a.created_by.id === currentUserId ||
+              a.opponent?.id === currentUserId
+                ? 1
+                : 0;
+            const bInvolvement =
+              b.created_by.id === currentUserId ||
+              b.opponent?.id === currentUserId
+                ? 1
+                : 0;
+            return bInvolvement - aInvolvement;
+          }
+        );
+
+        setOpenBattles(data.open_challenges || []);
+        setRunningBattles(sortedRunningBattles);
+        setPendingBattles(sortedPendingBattles);
+        setStartedBattles(data.started_challenges || []);
       }
     } catch (error) {
       console.error("Error fetching battles:", error);
@@ -81,6 +117,12 @@ const CreateBattle = () => {
 
   const handleOutcomeChange = (event) => {
     setGameOutcome(event.target.value);
+  };
+
+  const getRandomAvatar = () => {
+    const avatars = ["a1", "a2", "a3", "a4"];
+    const randomIndex = Math.floor(Math.random() * avatars.length);
+    return `/${avatars[randomIndex]}.svg`;
   };
 
   const fetchWalletBalance = () => {
@@ -489,7 +531,7 @@ const CreateBattle = () => {
               textAlign: "center",
             }}
           >
-            <Avatar>{battle.created_by.username[0]}</Avatar>
+            <img src={getRandomAvatar()} alt="Avatar" width="50" height="50" />
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.created_by.username}
             </Typography>
@@ -510,11 +552,12 @@ const CreateBattle = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              textAlign: "center",
+
             }}
           >
-            <Avatar>
-              {battle.opponent ? battle.opponent.username[0] : "?"}
-            </Avatar>
+            <img src={getRandomAvatar()} alt="Avatar" width="50" height="50" />
+
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.opponent ? battle.opponent.username : "Waiting..."}
             </Typography>
@@ -707,7 +750,7 @@ const CreateBattle = () => {
             textAlign: "center",
             borderRadius: "20px",
             marginTop: "10px",
-            padding:"10px"
+            padding: "10px",
           }}
         >
           चेतावनी: सभी उपयोगकर्ता खेल समाप्त होने के बाद win/loss का परिणाम

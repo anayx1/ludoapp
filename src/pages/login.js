@@ -313,7 +313,7 @@ const LoginForm = () => {
               </Link>
             </Typography>
             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-              <Link href="/admin/loginadmin" color="primary">
+              <Link href="/admin/" color="primary">
                 Admin Login
               </Link>
             </Typography>
