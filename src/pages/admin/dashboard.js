@@ -84,7 +84,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    setSocketio("https://socket.aoneludo.com");
+    setSocketIo();
     return () => {
       if (socket) {
         socket.off("connect", onConnect);

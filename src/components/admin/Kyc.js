@@ -78,7 +78,7 @@ const KYCComponent = () => {
   };
 
   useEffect(() => {
-    setSocketio("https://socket.aoneludo.com");
+    setSocketIo();
     fetchKycData();
     return () => {
       if (socket) {
