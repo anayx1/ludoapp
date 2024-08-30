@@ -70,7 +70,7 @@ const RunningBattle = () => {
   };
 
   const setSocketIo = () => {
-    const socketIo = io();
+    const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
     if (socketIo.connected) {
       onConnect();
@@ -109,7 +109,7 @@ const RunningBattle = () => {
   };
 
   useEffect(() => {
-    setSocketIo();
+    setSocketio("https://socket.aoneludo.com");
     return () => {
       if (socket) {
         socket.off("connect", onConnect);
