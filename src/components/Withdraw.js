@@ -130,7 +130,7 @@ const Withdraw = () => {
     };
 
     useEffect(() => {
-      setSocketio("https://socket.aoneludo.com");
+      setSocketIo();
       fetchUserDetails();
       return () => {
         if (socket) {
