@@ -52,7 +52,7 @@ const KYCComponent = () => {
 
 
   const setSocketIo = () => {
-    const socketIo = io();
+    const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
     if (socketIo.connected) {
       onConnect();
@@ -78,7 +78,7 @@ const KYCComponent = () => {
   };
 
   useEffect(() => {
-    setSocketIo();
+    setSocketio("https://socket.aoneludo.com");
     fetchKycData();
     return () => {
       if (socket) {
