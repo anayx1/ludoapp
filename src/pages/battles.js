@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
@@ -57,9 +57,9 @@ const CreateBattle = () => {
 
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
-  
+
   const [socket, setSocket] = useState(null);
-  
+
   const setSocketIo = () => {
     const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
@@ -105,13 +105,12 @@ const CreateBattle = () => {
 
     socketIo.on("connect", onConnect);
     socketIo.on("disconnect", onDisconnect);
-
-  }
+  };
 
   useEffect(() => {
     setSocketIo();
     return () => {
-      if(socket){
+      if (socket) {
         socket.off("connect", onConnect);
         socket.off("disconnect", onDisconnect);
       }
@@ -254,7 +253,7 @@ const CreateBattle = () => {
     setAmount(value.toString());
   };
 
-  const handleCreateBattle = () => {
+  const handleCreateBattle = async () => {
     if (!amount) {
       setErrorMessage("Please enter an amount.");
       setIsErrorModalOpen(true);
@@ -285,11 +284,6 @@ const CreateBattle = () => {
       return;
     }
 
-    // If all checks pass, proceed to create the room
-    createRoom(amountNum);
-  };
-
-  const createRoom = async (amount) => {
     const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setErrorMessage("User details not found. Please try logging in again.");
@@ -306,7 +300,7 @@ const CreateBattle = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            room_amount: amount,
+            room_amount: amountNum,
           }),
         }
       );
@@ -319,14 +313,88 @@ const CreateBattle = () => {
       console.log("Room created successfully:", data);
       setCreatedRoomId(data.room_id);
       socket && socket.emit("battle-created", JSON.stringify(data));
-
-      window.location.reload();
+      setAmount(""); // Clear the input field after successful creation
+      fetchBattles(); // Refresh the list of battles
     } catch (error) {
       console.error("Error creating room:", error);
       setErrorMessage("Failed to create room. Please try again.");
       setIsErrorModalOpen(true);
     }
   };
+
+  // const handleCreateBattle = () => {
+  //   if (!amount) {
+  //     setErrorMessage("Please enter an amount.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+  //   const amountNum = Number(amount);
+  //   if (isNaN(amountNum) || amountNum <= 0) {
+  //     setErrorMessage("Please enter a valid amount.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+
+  //   if (amountNum < 50) {
+  //     setErrorMessage("Minimum room amount is 50 Rs.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+
+  //   if (amountNum > 15000) {
+  //     setErrorMessage("Maximum room amount is 15000 Rs.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+
+  //   if (amountNum > walletBalance) {
+  //     setErrorMessage("Amount exceeds wallet balance.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+
+  //   // If all checks pass, proceed to create the room
+  //   createRoom(amountNum);
+  // };
+
+  // const createRoom = async (amount) => {
+  //   const currentUserId = getUserIdFromCookie();
+  //   if (!currentUserId) {
+  //     setErrorMessage("User details not found. Please try logging in again.");
+  //     setIsErrorModalOpen(true);
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           room_amount: amount,
+  //         }),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to create room");
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Room created successfully:", data);
+  //     setCreatedRoomId(data.room_id);
+  //     socket && socket.emit("battle-created", JSON.stringify(data));
+
+  //     // window.location.reload();
+  //   } catch (error) {
+  //     console.error("Error creating room:", error);
+  //     setErrorMessage("Failed to create room. Please try again.");
+  //     setIsErrorModalOpen(true);
+  //   }
+  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -367,7 +435,7 @@ const CreateBattle = () => {
       console.log("Room created successfully:", data);
       setCreatedRoomId(data.room_id);
       handleCloseModal();
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error creating room:", error);
       setError("Failed to create room. Please try again.");
@@ -402,7 +470,7 @@ const CreateBattle = () => {
       if (data.error) {
         setError(data.detail);
       }
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error starting room:", error);
       setError(error.message);
@@ -459,11 +527,12 @@ const CreateBattle = () => {
 
       const makeRunningData = await makeRunningResponse.json();
       console.log("Challenge set to running:", makeRunningData);
-      socket && socket.emit("battle-joined", JSON.stringify({userId: currentUserId}));
+      socket &&
+        socket.emit("battle-joined", JSON.stringify({ userId: currentUserId }));
       setCreatedRoomId(joinData.room_id);
       setJoinModalOpen(false);
       fetchBattles();
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error in battle process:", error);
       setError("Failed to complete the battle process. Please try again.");
@@ -489,7 +558,7 @@ const CreateBattle = () => {
       console.log(`Battle with ID: ${challengeId} cancelled successfully`);
       socket && socket.emit("battle-cancel", challengeId);
       fetchBattles();
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error cancelling battle:", error);
       setError("Failed to cancel battle. Please try again.");
@@ -622,7 +691,6 @@ const CreateBattle = () => {
               flexDirection: "column",
               alignItems: "center",
               textAlign: "center",
-
             }}
           >
             <img src={getRandomAvatar()} alt="Avatar" width="50" height="50" />

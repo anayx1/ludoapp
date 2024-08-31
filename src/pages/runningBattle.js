@@ -33,14 +33,17 @@ const RunningBattle = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [cancellationReason, setCancellationReason] = useState("");
   const [showCancellationReasons, setShowCancellationReasons] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
 
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
 
-  const getRandomAvatar = () => {
-    const avatars = ["a1", "a2", "a3", "a4"];
-    const randomIndex = Math.floor(Math.random() * avatars.length);
-    return `/${avatars[randomIndex]}.svg`;
-  };
+  // const getRandomAvatar = () => {
+  //   const avatars = ["a1", "a2", "a3", "a4"];
+  //   const randomIndex = Math.floor(Math.random() * avatars.length);
+  //   return `/${avatars[randomIndex]}.svg`;
+  // };
 
   useEffect(() => {
     if (id) {
@@ -164,7 +167,7 @@ const RunningBattle = () => {
       );
 
       if (!response.ok) throw new Error("Failed to update room ID");
-      if(socket){
+      if (socket) {
         socket.emit("room-id-created", id);
       }
       await fetchBattleDetails(); // Refresh battle details
@@ -217,7 +220,7 @@ const RunningBattle = () => {
       console.log("Result submitted successfully:", data);
       setSelectedFile(null);
       setGameOutcome("");
-      if(socket){
+      if (socket) {
         socket.emit("battle-result", id);
       }
       await fetchBattleDetails(); // Refresh battle details
@@ -320,7 +323,7 @@ const RunningBattle = () => {
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
                 <img
-                  src={getRandomAvatar()}
+                  src={'/a1.svg'}
                   alt="Avatar"
                   width="50"
                   height="50"
@@ -338,7 +341,7 @@ const RunningBattle = () => {
             <Grid item xs={12} sm={5}>
               <Box sx={{ textAlign: "center" }}>
                 <img
-                  src={getRandomAvatar()}
+                  src={'/a2.svg'}
                   alt="Avatar"
                   width="60"
                   height="60"
