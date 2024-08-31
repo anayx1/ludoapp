@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+
 import { useRouter } from "next/router";
 
 import {
@@ -103,9 +105,12 @@ const BattleModal = ({
           sx={{ mb: 2 }}
         >
           <Grid item xs={5} container direction="column" alignItems="center">
-            <Avatar sx={{ width: 56, height: 56, mb: 1 }}>
-              {selectedChallenge.created_by.username.charAt(0)}
-            </Avatar>
+          <img
+                  src={'/a1.svg'}
+                  alt="Avatar"
+                  width="50"
+                  height="50"
+                />
             <Typography variant="subtitle2">
               {selectedChallenge.created_by.username}
             </Typography>
@@ -116,11 +121,12 @@ const BattleModal = ({
             </Typography>
           </Grid>
           <Grid item xs={5} container direction="column" alignItems="center">
-            <Avatar sx={{ width: 56, height: 56, mb: 1 }}>
-              {selectedChallenge.opponent
-                ? selectedChallenge.opponent.username.charAt(0)
-                : "?"}
-            </Avatar>
+          <img
+                  src={'/a2.svg'}
+                  alt="Avatar"
+                  width="50"
+                  height="50"
+                />
             <Typography variant="subtitle2">
               {selectedChallenge.opponent
                 ? selectedChallenge.opponent.username
@@ -204,7 +210,6 @@ const BattleModal = ({
           </Grid>
           <Grid item xs={6}>
             <Typography>{selectedChallenge?.room?.room_id}</Typography>
-            {console.log(selectedChallenge,"asfsdf")}
           </Grid>
           <Grid item xs={6}>
             <Typography>Amount</Typography>
@@ -231,6 +236,18 @@ const BattleModal = ({
           </Grid>
           <Grid item xs={6}>
             <Typography>-</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Date & Time</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>
+              {selectedChallenge.room_result?.timestamp
+                ? dayjs(selectedChallenge.room_result.timestamp).format(
+                    "MM/DD/YYYY hh:mm:ss A"
+                  )
+                : "-"}
+            </Typography>
           </Grid>
         </Grid>
         <Divider sx={{ mt: 2 }} />
@@ -263,7 +280,6 @@ const BattleModal = ({
             <Grid item xs={6}>
               <Typography>{selectedChallenge.created_by.id}</Typography>
             </Grid>
-            {console.log(selectedChallenge, "asfsfd")}
             <Grid item xs={6}>
               <Typography>Name</Typography>
             </Grid>
@@ -289,6 +305,22 @@ const BattleModal = ({
             </Grid>
             <Grid item xs={6}>
               <Typography>0.5</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Status</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.room_result?.creator_status || "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cancellation Reason</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.creator_cancellation_reason || "-"}
+              </Typography>
             </Grid>
           </Grid>
         </Box>
@@ -357,6 +389,22 @@ const BattleModal = ({
             </Grid>
             <Grid item xs={6}>
               <Typography>-</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Status</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.room_result?.opponent_status || "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cancellation Reason</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.opponent_cancellation_reason || "-"}
+              </Typography>
             </Grid>
           </Grid>
         </Box>

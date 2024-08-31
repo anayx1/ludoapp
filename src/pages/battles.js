@@ -183,12 +183,6 @@ const CreateBattle = () => {
     setGameOutcome(event.target.value);
   };
 
-  const getRandomAvatar = () => {
-    const avatars = ["a1", "a2", "a3", "a4"];
-    const randomIndex = Math.floor(Math.random() * avatars.length);
-    return `/${avatars[randomIndex]}.svg`;
-  };
-
   const fetchWalletBalance = () => {
     const userData = Cookies.get("userData");
     if (userData) {
@@ -442,12 +436,6 @@ const CreateBattle = () => {
     }
   };
 
-  const handleJoinBattleClick = (battle) => {
-    setSelectedBattle(battle);
-    setJoinModalOpen(true);
-    socket && socket.emit("battle-joined", JSON.stringify(battle));
-  };
-
   const handleStartBattle = async (battle) => {
     const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
@@ -475,6 +463,11 @@ const CreateBattle = () => {
       console.error("Error starting room:", error);
       setError(error.message);
     }
+  };
+  const handleJoinBattleClick = (battle) => {
+    setSelectedBattle(battle);
+    setJoinModalOpen(true);
+    socket && socket.emit("battle-joined", JSON.stringify(battle));
   };
 
   const handleJoinBattleConfirm = async () => {
@@ -669,7 +662,7 @@ const CreateBattle = () => {
               textAlign: "center",
             }}
           >
-            <img src={getRandomAvatar()} alt="Avatar" width="50" height="50" />
+            <img src={"/a1.svg"} alt="Avatar" width="60" height="60" />{" "}
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.created_by.username}
             </Typography>
@@ -693,8 +686,7 @@ const CreateBattle = () => {
               textAlign: "center",
             }}
           >
-            <img src={getRandomAvatar()} alt="Avatar" width="50" height="50" />
-
+            <img src={"/a2.svg"} alt="Avatar" width="60" height="60" />
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.opponent ? battle.opponent.username : "Waiting..."}
             </Typography>
@@ -758,7 +750,7 @@ const CreateBattle = () => {
               textAlign: "center",
             }}
           >
-            <Avatar>{battle.created_by.username[0]}</Avatar>
+            <img src={"/a1.svg"} alt="Avatar" width="60" height="60" />{" "}
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.created_by.username}
             </Typography>
@@ -781,7 +773,7 @@ const CreateBattle = () => {
               textAlign: "center",
             }}
           >
-            <Avatar>{battle.opponent.username[0]}</Avatar>
+            <img src={"/a2.svg"} alt="Avatar" width="60" height="60" />{" "}
             <Typography variant="body2" className="text-wrapper-battle">
               {battle.opponent.username}
             </Typography>
