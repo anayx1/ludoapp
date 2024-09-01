@@ -96,8 +96,7 @@ const RunningBattle = () => {
       });
     }
 
-    function onDisconnect() {
-    }
+    function onDisconnect() {}
 
     socketIo.on("connect", onConnect);
     socketIo.on("disconnect", onDisconnect);
@@ -250,7 +249,10 @@ const RunningBattle = () => {
     : battleDetails?.room_result?.creator_status;
 
   const shouldShowCancelButton =
-    !userHasCancelled && !userResult && !battleDetails?.room_result;
+    !userHasCancelled &&
+    !userResult &&
+    !battleDetails?.room_result &&
+    !gameOutcome;
   const shouldShowRoomIdInput =
     isCreator &&
     !battleDetails?.room.update_status &&
