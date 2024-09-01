@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { io } from "socket.io-client";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -64,14 +65,15 @@ const Withdraw = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
 
+    const [userId, setUserId] = useState(null);
     const [socket, setSocket] = useState(null);
-    const [isConnected, setIsConnected] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
       const sessionUserData = JSON.parse(sessionStorage.getItem("userData"));
 
       if (sessionUserData) {
+        setUserId(sessionUserData.user_details.id);
         setIsKycCompleted(sessionUserData.user_details.kyc);
         setWalletId(sessionUserData.user_details.wallet?.wallet_id);
         setWithdrawableBalance(
@@ -111,18 +113,16 @@ const Withdraw = () => {
       }
 
       function onConnect() {
-        setIsConnected(true);
-
-        socketIo.emit("user-joined", "admin");
-
-        socketIo.on("update-stats", () => {
-          fetchKycData();
+        socketIo.emit("user-joined", userId);
+        socketIo.on("balance-update", (data) => {
+          if (data === userId) {
+            fetchUserDetails();
+          }
         });
       }
 
       function onDisconnect() {
-        setIsConnected(false);
-        setTransport("N/A");
+
       }
 
       socketIo.on("connect", onConnect);
