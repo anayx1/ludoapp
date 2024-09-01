@@ -36,9 +36,6 @@ const RunningBattle = () => {
 
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
 
-  const [isConnected, setIsConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
-
   const [socket, setSocket] = useState(null);
 
   const fetchBattleDetails = async () => {
@@ -77,13 +74,6 @@ const RunningBattle = () => {
     }
 
     function onConnect() {
-      setIsConnected(true);
-      setTransport(socketIo.io.engine.transport.name);
-
-      socketIo.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
-
       socketIo.emit("user-joined", userId);
 
       socketIo.on("room-id-created", (data) => {
@@ -100,8 +90,6 @@ const RunningBattle = () => {
     }
 
     function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
     }
 
     socketIo.on("connect", onConnect);

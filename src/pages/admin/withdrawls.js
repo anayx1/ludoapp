@@ -23,6 +23,7 @@ import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import CloseIcon from "@mui/icons-material/Close";
 import withAdminAuth from "@/components/withAdminAuth";
+import { io } from "socket.io-client";
 
 const WithdrawalsComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -35,6 +36,40 @@ const WithdrawalsComponent = () => {
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [resetData, setResetData] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+    const [socket, setSocket] = useState(null);
+
+    const setSocketIo = () => {
+      const socketIo = io("https://socket.aoneludo.com");
+      setSocket(socketIo);
+      if (socketIo.connected) {
+        onConnect();
+      }
+
+      function onConnect() {
+        socketIo.emit("user-joined", "admin");
+        socketIo.on("withdraw-request", (data) => {
+          setResetData(true);
+        });
+      }
+
+      function onDisconnect() {
+        
+      }
+
+      socketIo.on("connect", onConnect);
+      socketIo.on("disconnect", onDisconnect);
+    };
+
+    useEffect(() => {
+      setSocketIo();
+      return () => {
+        if (socket) {
+          socket.off("connect", onConnect);
+          socket.off("disconnect", onDisconnect);
+        }
+      };
+    }, []);
 
   const fetchWithdrawalData = async () => {
     try {
@@ -97,6 +132,9 @@ const WithdrawalsComponent = () => {
       );
       if (response.data.error === false) {
         console.log("Withdrawal approved successfully");
+        if (socket) {
+          socket.emit("balance-update", withdrawal.wallet.user.id);
+        }
         setResetData(true);
       } else {
         console.error("Error approving withdrawal:", response.data.detail);

@@ -389,11 +389,12 @@ const BattlesComponent = ({ initialTab = 0 }) => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [selectedWinner, setSelectedWinner] = useState("");
   const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
   const showActionColumn = tabValue == 3 || tabValue === 1; // Show only for Pending tab
 
-  const fetchChallenges = async () => {
-    setIsLoading(true);
+  const fetchChallenges = async (loading = true) => {
+    if(loading){
+      setIsLoading(true);
+    }
     try {
       const response = await axios.get(
         "https://ludotest.pythonanywhere.com/api/get-challenges/"
@@ -414,18 +415,16 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     }
 
     function onConnect() {
-      setIsConnected(true);
 
       socketIo.emit("user-joined", "admin");
 
       socketIo.on("update-stats", () => {
-        fetchChallenges();
+        fetchChallenges(false);
       });
     }
 
     function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
+
     }
 
     socketIo.on("connect", onConnect);

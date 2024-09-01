@@ -20,7 +20,7 @@ import {
 import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import withAdminAuth from "@/components/withAdminAuth";
-
+import { io } from "socket.io-client";
 
 const DepositComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -38,6 +38,38 @@ const DepositComponent = () => {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [modalType, setModalType] = useState("credit");
+
+  const [socket, setSocket] = useState(null);
+
+  const setSocketIo = () => {
+    const socketIo = io("https://socket.aoneludo.com");
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      socketIo.emit("user-joined", "admin");
+      socketIo.on("deposit-request", (data) => {
+        fetchDepositData();
+      });
+    }
+
+    function onDisconnect() {}
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    setSocketIo();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
+      }
+    };
+  }, []);
 
   const fetchDepositData = useCallback(async () => {
     try {
@@ -128,6 +160,9 @@ const DepositComponent = () => {
             { ...deposit, status: "S" },
           ],
         }));
+        if (socket) {
+          socket.emit("balance-update", deposit.wallet.user.id);
+        }
         setSnackbar({ open: true, message: "Deposit approved successfully" });
       } else if (
         response.data.message === "Deposit is already done to the wallet"
