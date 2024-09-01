@@ -105,7 +105,7 @@ const LoginForm = () => {
         setVerified(true);
         setError("");
         setOtpMessage("OTP verified successfully");
-        // Send POST request to backend
+
         try {
           const backendResponse = await axios.post(
             `https://ludotest.pythonanywhere.com/auth/verify-otp/`,
@@ -115,40 +115,66 @@ const LoginForm = () => {
             }
           );
 
-          // Store the backend response in session storage
-          const userData = JSON.stringify(backendResponse.data);
-          sessionStorage.setItem("userData", userData);
+          let userData;
+          try {
+            userData = JSON.parse(backendResponse.data);
+          } catch (e) {
+            // If parsing fails, assume the response is already an object
+            userData = backendResponse.data;
+          }
 
-          // Store the backend response in cookies
-          Cookies.set("userData", userData, { expires: 7 }); // Expires in 7 days
+          if (userData.user_details && userData.user_details.is_blocked) {
+            setError("This user is blocked. Please contact admin.");
+            setOtpMessage("");
+            return;
+          }
 
-          console.log(
-            "Stored session data:",
-            sessionStorage.getItem("userData")
-          );
+          if (userData.user_details) {
+            // User details exist, proceed with login
+            sessionStorage.setItem("userData", JSON.stringify(userData));
+            Cookies.set("userData", JSON.stringify(userData), { expires: 7 });
+            console.log(
+              "Stored session data:",
+              sessionStorage.getItem("userData")
+            );
 
-          // Retrieve and decode cookie data
-          const cookieData = Cookies.get("userData");
-          const decodedCookieData = cookieData
-            ? JSON.parse(decodeURIComponent(cookieData))
-            : null;
-          console.log("Stored and decoded cookie data:", decodedCookieData);
+            // Retrieve and decode cookie data
+            const cookieData = Cookies.get("userData");
+            const decodedCookieData = cookieData
+              ? JSON.parse(decodeURIComponent(cookieData))
+              : null;
+            console.log("Stored and decoded cookie data:", decodedCookieData);
 
-          // Redirect to home page or dashboard
-          router.push("/");
+            // Redirect to home page or dashboard
+            router.push("/");
+          } else {
+            // No user details, prompt to register
+            setError("Please register first.");
+            setOtpMessage("");
+          }
         } catch (backendError) {
           console.error("Backend verification error:", backendError);
-          setError("Please register first.");
+          if (
+            backendError.response &&
+            backendError.response.data &&
+            backendError.response.data.user_details
+          ) {
+            // If we still get user details in the error response, proceed with login
+            const userData = backendError.response.data;
+            sessionStorage.setItem("userData", JSON.stringify(userData));
+            Cookies.set("userData", JSON.stringify(userData), { expires: 7 });
+            router.push("/");
+          } else {
+            setError("Please register first.");
+          }
         }
       } else {
-        // Handle the case of incorrect OTP
         setError("Incorrect OTP. Please try again.");
         setOtpMessage("OTP verification failed");
       }
     } catch (error) {
       console.error("OTP verification error:", error);
       if (error.response && error.response.data) {
-        // Check if the error response matches the specific case
         if (
           error.response.data.isOTPVerified === false &&
           error.response.data.reason === "Invalid Request"
