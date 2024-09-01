@@ -15,7 +15,6 @@ const Dashboard = () => {
   const router = useRouter();
 
   const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -65,18 +64,14 @@ const Dashboard = () => {
     }
 
     function onConnect() {
-      setIsConnected(true);
-
       socketIo.emit("user-joined", "admin");
-
       socketIo.on("update-stats", () => {
         fetchData();
       });
     }
 
     function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
+
     }
 
     socketIo.on("connect", onConnect);

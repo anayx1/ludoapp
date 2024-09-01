@@ -30,7 +30,6 @@ const KYCComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
 
   const fetchKycData = async () => {
     try {
@@ -59,7 +58,6 @@ const KYCComponent = () => {
     }
 
     function onConnect() {
-      setIsConnected(true);
 
       socketIo.emit("user-joined", "admin");
 
@@ -69,8 +67,6 @@ const KYCComponent = () => {
     }
 
     function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
     }
 
     socketIo.on("connect", onConnect);

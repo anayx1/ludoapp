@@ -53,11 +53,9 @@ const CreateBattle = () => {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [copyError, setCopyError] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
   const router = useRouter();
-
-  const [isConnected, setIsConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
-
+  
   const [socket, setSocket] = useState(null);
 
   const setSocketIo = () => {
@@ -68,13 +66,6 @@ const CreateBattle = () => {
     }
 
     function onConnect() {
-      setIsConnected(true);
-      setTransport(socketIo.io.engine.transport.name);
-
-      socketIo.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
-
       socketIo.emit("user-joined", userId);
 
       socketIo.on("battle-joined", (data) => {
@@ -96,11 +87,16 @@ const CreateBattle = () => {
         console.log("Battle result", data);
         fetchBattles();
       });
+
+      socketIo.on('balance-update', (data) => {
+        if (data === userId) {
+          fetchWalletBalance();
+        }
+      })
     }
 
     function onDisconnect() {
-      setIsConnected(false);
-      setTransport("N/A");
+
     }
 
     socketIo.on("connect", onConnect);
@@ -118,13 +114,15 @@ const CreateBattle = () => {
   }, []);
 
   useEffect(() => {
-    fetchBattles();
+    fetchBattles(true);
     fetchWalletBalance();
     fetchUserId();
   }, []);
 
-  const fetchBattles = async () => {
-    setIsLoading(true);
+  const fetchBattles = async (loading = false) => {
+    if(loading){
+      setIsLoading(true);
+    }
     try {
       const response = await fetch(
         "https://ludotest.pythonanywhere.com/api/get-challenges/"
@@ -286,6 +284,7 @@ const CreateBattle = () => {
     }
 
     try {
+      setBtnLoading(true);
       const response = await fetch(
         `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
         {
@@ -300,6 +299,7 @@ const CreateBattle = () => {
       );
 
       if (!response.ok) {
+        setBtnLoading(false);
         throw new Error("Failed to create room");
       }
 
@@ -307,6 +307,7 @@ const CreateBattle = () => {
       console.log("Room created successfully:", data);
       setCreatedRoomId(data.room_id);
       socket && socket.emit("battle-created", JSON.stringify(data));
+      setBtnLoading(false);
       setAmount(""); // Clear the input field after successful creation
       fetchBattles(); // Refresh the list of battles
     } catch (error) {
@@ -850,7 +851,7 @@ const CreateBattle = () => {
       setIsResultModalOpen(false);
       setSelectedFile(null);
       setGameOutcome("");
-      fetchBattles();
+      fetchBattles(true);
     } catch (error) {
       console.error("Error submitting result:", error);
       setError("Failed to submit result. Please try again.");
@@ -930,13 +931,14 @@ const CreateBattle = () => {
             <Button
               variant="contained"
               onClick={handleCreateBattle}
+              disabled={btnLoading}
               sx={{
                 bgcolor: "black",
                 color: "white",
                 "&:hover": { bgcolor: "grey.800" },
               }}
             >
-              SET
+              {btnLoading ? <CircularProgress size={24} style={{color: "#fff"}} /> : "SET"}
             </Button>
           </Box>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
