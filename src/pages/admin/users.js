@@ -48,7 +48,10 @@ const UserComponent = () => {
   }, [userData, searchTerm]);
 
   const handleViewDetails = (userId) => {
-    router.push(`/admin/userDetail/`);
+    router.push({
+      pathname: "/admin/userDetail",
+      query: { id: userId },
+    });
   };
 
   return (
@@ -110,9 +113,8 @@ const UserComponent = () => {
                         <Button
                           variant="contained"
                           color="primary"
-                          // onClick={() => handleViewDetails(user.id)}
-                          onClick={handleViewDetails}
-                          >
+                          onClick={() => handleViewDetails(user.id)}
+                        >
                           View Details
                         </Button>
                       </TableCell>

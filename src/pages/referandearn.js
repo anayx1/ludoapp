@@ -43,7 +43,7 @@ const ReferAndEarn = () => {
   };
 
   const shareWhatsApp = () => {
-    const link = `https://aoneludo.com/signup?ref=${referralCode}`;
+    const link = `https://aoneludo.com/register?ref=${referralCode}`;
     const message = encodeURIComponent(
       `Join me on this awesome app! Use my referral code: ${referralCode}\n${link}`
     );

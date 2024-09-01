@@ -16,6 +16,7 @@
     "@mui/material": "^5.16.4",
     "axios": "^1.7.3",
     "cookies-next": "^4.2.1",
+    "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "next": "14.2.5",
     "react": "^18",
