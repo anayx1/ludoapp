@@ -57,7 +57,7 @@ const Dashboard = () => {
   };
 
   const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
+    const socketIo = io("http://93.127.198.250:3002");
     setSocket(socketIo);
     if (socketIo.connected) {
       onConnect();
