@@ -11,15 +11,30 @@ const withAuth = (WrappedComponent) => {
 
     useEffect(() => {
       const checkAuthAndMaintenance = async () => {
-        const userData = Cookies.get("userData");
-        if (!userData) {
+        const cookieUserData = Cookies.get("userData");
+        const sessionUserData = sessionStorage.getItem("userData");
+
+        if (!cookieUserData && !sessionUserData) {
           Router.replace("/login");
           return;
         }
 
         try {
-          // Attempt to parse the cookie to ensure it's valid JSON
-          JSON.parse(decodeURIComponent(userData));
+          let userData;
+          if (cookieUserData) {
+            userData = JSON.parse(decodeURIComponent(cookieUserData));
+          } else if (sessionUserData) {
+            userData = JSON.parse(sessionUserData);
+          }
+
+          // Check if user is blocked
+          if (userData.user_details.is_blocked) {
+            // Remove user data from cookies and session storage
+            Cookies.remove("userData");
+            sessionStorage.removeItem("userData");
+            Router.replace("/login");
+            return;
+          }
 
           // Check maintenance mode
           const maintenanceResponse = await axios.get(
@@ -38,7 +53,9 @@ const withAuth = (WrappedComponent) => {
             // If the server is in maintenance mode, it might return a 503 status
             Router.replace("/maintenance");
           } else {
-            Cookies.remove("userData"); // Remove invalid cookie
+            // Remove user data from cookies and session storage
+            Cookies.remove("userData");
+            sessionStorage.removeItem("userData");
             Router.replace("/login");
           }
         }

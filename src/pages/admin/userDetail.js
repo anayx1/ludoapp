@@ -91,7 +91,9 @@ const UserDetail = () => {
 
   const handleBlock = async (userId) => {
     try {
-      const response = await axios.post(`https://ludotest.pythonanywhere.com/panel/block/${userId}/`);
+      const response = await axios.post(
+        `https://ludotest.pythonanywhere.com/panel/block/${userId}/`
+      );
       console.log("Block Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
         setSnackbar({
@@ -106,6 +108,10 @@ const UserDetail = () => {
           severity: "error",
         });
       }
+      // Set a timeout to reload the page after 3 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error blocking user:", error);
       setSnackbar({
@@ -113,12 +119,18 @@ const UserDetail = () => {
         message: "Error blocking user",
         severity: "error",
       });
+      // Set a timeout to reload the page after 3 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
-  
+
   const handleUnblock = async (userId) => {
     try {
-      const response = await axios.post(`https://ludotest.pythonanywhere.com/panel/unblock/${userId}/`);
+      const response = await axios.post(
+        `https://ludotest.pythonanywhere.com/panel/unblock/${userId}/`
+      );
       console.log("Unblock Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
         setSnackbar({
@@ -133,6 +145,10 @@ const UserDetail = () => {
           severity: "error",
         });
       }
+      // Set a timeout to reload the page after 3 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error unblocking user:", error);
       setSnackbar({
@@ -140,10 +156,12 @@ const UserDetail = () => {
         message: "Error unblocking user",
         severity: "error",
       });
+      // Set a timeout to reload the page after 3 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
-  
-  
 
   const handleAddMoney = async () => {
     if (!id || !amount) return;
@@ -241,7 +259,7 @@ const UserDetail = () => {
             <Divider />
             <Stack spacing={1.5} sx={{ mt: 2 }}>
               <DetailLine label="Id" value={userDetails.id} />
-              <DetailLine label="Name" value={userDetails.name || "-"} />
+              <DetailLine label="Name" value={userDetails.username || "-"} />
               <DetailLine label="Mobile" value={userDetails.phone_number} />
               <DetailLine label="Win" value={userDetails.metric.win} />
               <DetailLine label="Cash" value={userDetails.wallet.balance} />
@@ -373,27 +391,25 @@ const UserDetail = () => {
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Id</TableCell>
+                    <TableCell>Sno.</TableCell>
                     <TableCell>Label</TableCell>
                     <TableCell>Txn Id</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Status</TableCell>
-                    <TableCell>Tag</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {walletHistory.map((item) => (
+                  {walletHistory.map((item, index) => (
                     <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.label}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{item.tag}</TableCell>
                       <TableCell>{item.txn_id}</TableCell>
-                      <TableCell>{item.amount}</TableCell>
+                      <TableCell>{item.deposit_amount}</TableCell>
                       <TableCell>
                         {dayjs(item.deposit_date).format("MM/DD/YYYY HH:mm:ss")}
                       </TableCell>
                       <TableCell>{item.status}</TableCell>
-                      <TableCell>{item.tag}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
