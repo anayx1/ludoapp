@@ -55,7 +55,7 @@ const CreateBattle = () => {
   const [copyError, setCopyError] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
   const router = useRouter();
-  
+
   const [socket, setSocket] = useState(null);
 
   const setSocketIo = () => {
@@ -88,16 +88,14 @@ const CreateBattle = () => {
         fetchBattles();
       });
 
-      socketIo.on('balance-update', (data) => {
+      socketIo.on("balance-update", (data) => {
         if (data === userId) {
           fetchWalletBalance();
         }
-      })
+      });
     }
 
-    function onDisconnect() {
-
-    }
+    function onDisconnect() {}
 
     socketIo.on("connect", onConnect);
     socketIo.on("disconnect", onDisconnect);
@@ -120,7 +118,7 @@ const CreateBattle = () => {
   }, []);
 
   const fetchBattles = async (loading = false) => {
-    if(loading){
+    if (loading) {
       setIsLoading(true);
     }
     try {
@@ -465,22 +463,81 @@ const CreateBattle = () => {
       setError(error.message);
     }
   };
-  const handleJoinBattleClick = (battle) => {
-    setSelectedBattle(battle);
-    setJoinModalOpen(true);
-    socket && socket.emit("battle-joined", JSON.stringify(battle));
-  };
+  // const handleJoinBattleClick = (battle) => {
+  //   setSelectedBattle(battle);
+  //   setJoinModalOpen(true);
+  //   socket && socket.emit("battle-joined", JSON.stringify(battle));
+  // };
 
-  const handleJoinBattleConfirm = async () => {
-    if (!selectedBattle) return;
+  // const handleJoinBattleConfirm = async () => {
+  //   if (!selectedBattle) return;
 
+  //   const currentUserId = getUserIdFromCookie();
+  //   if (!currentUserId) {
+  //     setError("User ID not found. Please try logging in again.");
+  //     return;
+  //   }
+
+  //   if (walletBalance < selectedBattle.room.room_amount) {
+  //     setError("Insufficient wallet balance to join this battle.");
+  //     return;
+  //   }
+
+  //   try {
+  //     // First, join the challenge
+  //     const joinResponse = await fetch(
+  //       `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${selectedBattle.challenge_id}/`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     if (!joinResponse.ok) {
+  //       throw new Error("Failed to join battle");
+  //     }
+
+  //     const joinData = await joinResponse.json();
+  //     console.log("Joined battle successfully:", joinData);
+
+  //     // Then, send the PUT request to make the challenge running
+  //     const makeRunningResponse = await fetch(
+  //       `https://ludotest.pythonanywhere.com/api/make-challenge-running/${selectedBattle.challenge_id}/`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     if (!makeRunningResponse.ok) {
+  //       throw new Error("Failed to make challenge running");
+  //     }
+
+  //     const makeRunningData = await makeRunningResponse.json();
+  //     console.log("Challenge set to running:", makeRunningData);
+  //     socket &&
+  //       socket.emit("battle-joined", JSON.stringify({ userId: currentUserId }));
+  //     setCreatedRoomId(joinData.room_id);
+  //     setJoinModalOpen(false);
+  //     fetchBattles();
+  //     // window.location.reload();
+  //   } catch (error) {
+  //     console.error("Error in battle process:", error);
+  //     setError("Failed to complete the battle process. Please try again.");
+  //   }
+  // };
+  const handleJoinBattleClick = async (battle) => {
     const currentUserId = getUserIdFromCookie();
     if (!currentUserId) {
       setError("User ID not found. Please try logging in again.");
       return;
     }
 
-    if (walletBalance < selectedBattle.room.room_amount) {
+    if (walletBalance < battle.room.room_amount) {
       setError("Insufficient wallet balance to join this battle.");
       return;
     }
@@ -488,7 +545,7 @@ const CreateBattle = () => {
     try {
       // First, join the challenge
       const joinResponse = await fetch(
-        `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${selectedBattle.challenge_id}/`,
+        `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${battle.challenge_id}/`,
         {
           method: "POST",
           headers: {
@@ -506,7 +563,7 @@ const CreateBattle = () => {
 
       // Then, send the PUT request to make the challenge running
       const makeRunningResponse = await fetch(
-        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${selectedBattle.challenge_id}/`,
+        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${battle.challenge_id}/`,
         {
           method: "PUT",
           headers: {
@@ -524,12 +581,10 @@ const CreateBattle = () => {
       socket &&
         socket.emit("battle-joined", JSON.stringify({ userId: currentUserId }));
       setCreatedRoomId(joinData.room_id);
-      setJoinModalOpen(false);
       fetchBattles();
-      // window.location.reload();
     } catch (error) {
       console.error("Error in battle process:", error);
-      setError("Failed to complete the battle process. Please try again.");
+      setError("Failed to join the battle. Please try again.");
     }
   };
 
@@ -938,7 +993,11 @@ const CreateBattle = () => {
                 "&:hover": { bgcolor: "grey.800" },
               }}
             >
-              {btnLoading ? <CircularProgress size={24} style={{color: "#fff"}} /> : "SET"}
+              {btnLoading ? (
+                <CircularProgress size={24} style={{ color: "#fff" }} />
+              ) : (
+                "SET"
+              )}
             </Button>
           </Box>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -1150,7 +1209,7 @@ const CreateBattle = () => {
         </Box>
       </Modal>
 
-      <Modal
+      {/* <Modal
         open={joinModalOpen}
         onClose={() => setJoinModalOpen(false)}
         aria-labelledby="join-battle-modal"
@@ -1195,7 +1254,7 @@ const CreateBattle = () => {
             Cancel
           </Button>
         </Box>
-      </Modal>
+      </Modal> */}
 
       <Modal
         open={isErrorModalOpen}
