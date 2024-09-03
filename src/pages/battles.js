@@ -234,6 +234,11 @@ const CreateBattle = () => {
     return null;
   };
 
+  const isValidAmount = (value) => {
+    const numValue = Number(value);
+    return numValue >= 50 && numValue <= 15000 && numValue % 50 === 0;
+  };
+
   const handleAmountChange = (event) => {
     setAmount(event.target.value);
     setError("");
@@ -249,21 +254,11 @@ const CreateBattle = () => {
       setIsErrorModalOpen(true);
       return;
     }
+
     const amountNum = Number(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      setErrorMessage("Please enter a valid amount.");
-      setIsErrorModalOpen(true);
-      return;
-    }
 
-    if (amountNum < 50) {
-      setErrorMessage("Minimum room amount is 50 Rs.");
-      setIsErrorModalOpen(true);
-      return;
-    }
-
-    if (amountNum > 15000) {
-      setErrorMessage("Maximum room amount is 15000 Rs.");
+    if (!isValidAmount(amountNum)) {
+      setErrorMessage("Please enter an amount between 50 and 15000 in multiples of 50. Ex- 50,200,550");
       setIsErrorModalOpen(true);
       return;
     }
