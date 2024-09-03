@@ -29,6 +29,7 @@ const Register = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpMessage, setOtpMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
 
   useEffect(() => {
     validateForm();
@@ -195,6 +196,7 @@ const Register = () => {
 
     if (isFormValid) {
       setIsLoading(true);
+      setRegistrationError(""); // Clear any previous error messages
       const submissionData = {
         username: formData.username,
         email: formData.email,
@@ -228,25 +230,38 @@ const Register = () => {
                 "Unexpected response from wallet creation",
                 walletResponse
               );
-              // Handle unexpected response
+              setRegistrationError(
+                "An unexpected error occurred. Please try again."
+              );
             }
           } catch (walletError) {
             console.error(
               "Error during wallet creation:",
               walletError.response?.data || walletError.message
             );
-            // Handle wallet creation error
+            setRegistrationError("Failed to create wallet. Please try again.");
           }
         } else {
           console.error("Registration failed", registrationResponse.data);
-          // Handle registration failure
+          setRegistrationError("Registration failed. Please try again.");
         }
       } catch (error) {
         console.error(
           "Error during registration:",
           error.response?.data || error.message
         );
-        // Handle registration error
+        if (
+          error.response?.data?.error === true &&
+          error.response?.data?.detail?.phone_number
+        ) {
+          setRegistrationError(
+            "An account with this phone number already exists. Please login."
+          );
+        } else {
+          setRegistrationError(
+            "An error occurred during registration. Please try again."
+          );
+        }
       } finally {
         setIsLoading(false);
       }
