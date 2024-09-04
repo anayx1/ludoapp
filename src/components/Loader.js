@@ -1,18 +1,22 @@
-import React from "react";
-import Styles from "@/styles/loader.module.css";
+import React from 'react';
+import Lottie from 'react-lottie';
+import animationData from "@/components/loaderAnimation.json";
 
-const loader = () => {
+const Loader = ({ width = 200, height = 200 }) => {
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice'
+    }
+  };
+
   return (
-    <>
-      <div className={Styles.loaderRectangle}>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <Lottie options={defaultOptions} height={height} width={width} />
+    </div>
   );
 };
 
-export default loader;
+export default Loader;

@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/router";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
+import Cookies from "js-cookie";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
@@ -31,7 +32,9 @@ const Profile = () => {
 
   const handleLogout = () => {
     sessionStorage.removeItem("userData");
-    router.push("/login");
+    Cookies.remove("userData");
+    setWalletBalance(0);
+    window.location.href = "/login";
   };
 
   const handleKycRedirect = () => {

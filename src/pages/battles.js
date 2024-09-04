@@ -27,6 +27,7 @@ import {
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
 import { io } from "socket.io-client";
+import Loader from "@/components/Loader";
 
 const CreateBattle = () => {
   const [amount, setAmount] = useState("");
@@ -1009,9 +1010,9 @@ const CreateBattle = () => {
         </Box>
       </Paper>
 
-      {isLoading ? (
+      {isLoading ?  (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
+         <Loader />
         </Box>
       ) : (
         <>
