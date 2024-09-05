@@ -6,6 +6,7 @@ import {
   Typography,
   Container,
   CircularProgress,
+  Snackbar,
 } from "@mui/material";
 import Link from "next/link";
 import axios from "axios";
@@ -30,6 +31,8 @@ const Register = () => {
   const [otpMessage, setOtpMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     validateForm();
@@ -41,6 +44,12 @@ const Register = () => {
     }
   }, [router.isReady, router.query]);
 
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -196,7 +205,7 @@ const Register = () => {
 
     if (isFormValid) {
       setIsLoading(true);
-      setRegistrationError(""); // Clear any previous error messages
+      setSnackbarMessage(""); // Clear any previous error messages
       const submissionData = {
         username: formData.username,
         email: formData.email,
@@ -230,20 +239,23 @@ const Register = () => {
                 "Unexpected response from wallet creation",
                 walletResponse
               );
-              setRegistrationError(
+              setSnackbarMessage(
                 "An unexpected error occurred. Please try again."
               );
+              setSnackbarOpen(true);
             }
           } catch (walletError) {
             console.error(
               "Error during wallet creation:",
               walletError.response?.data || walletError.message
             );
-            setRegistrationError("Failed to create wallet. Please try again.");
+            setSnackbarMessage("Failed to create wallet. Please try again.");
+            setSnackbarOpen(true);
           }
         } else {
           console.error("Registration failed", registrationResponse.data);
-          setRegistrationError("Registration failed. Please try again.");
+          setSnackbarMessage("Registration failed. Please try again.");
+          setSnackbarOpen(true);
         }
       } catch (error) {
         console.error(
@@ -254,13 +266,15 @@ const Register = () => {
           error.response?.data?.error === true &&
           error.response?.data?.detail?.phone_number
         ) {
-          setRegistrationError(
+          setSnackbarMessage(
             "An account with this phone number already exists. Please login."
           );
+          setSnackbarOpen(true);
         } else {
-          setRegistrationError(
+          setSnackbarMessage(
             "An error occurred during registration. Please try again."
           );
+          setSnackbarOpen(true);
         }
       } finally {
         setIsLoading(false);
@@ -435,6 +449,12 @@ const Register = () => {
           <CircularProgress size={60} />
         </Box>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+      />
     </>
   );
 };
