@@ -338,11 +338,11 @@ const LoginForm = () => {
                 Register
               </Link>
             </Typography>
-            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            {/* <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               <Link href="/admin/" color="primary">
                 Admin Login
               </Link>
-            </Typography>
+            </Typography> */}
           </div>
         </Box>
       </Container>

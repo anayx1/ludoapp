@@ -286,6 +286,25 @@ const Register = () => {
 
   return (
     <>
+    <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          backgroundColor: "black",
+          color: "white",
+          height: "80px",
+        }}
+      >
+        <div>
+          <img
+            src={"logo_ludo.webp"}
+            style={{ width: "100px", height: "auto" }}
+            alt="logo"
+          />
+        </div>
+      </div>
       <Container
         component="main"
         maxWidth="xs"
