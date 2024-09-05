@@ -90,8 +90,7 @@ const UserComponent = () => {
                   <TableCell>Username</TableCell>
                   <TableCell>Phone Number</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>First Name</TableCell>
-                  <TableCell>Last Name</TableCell>
+                  <TableCell>Name</TableCell>
                   <TableCell>Verified</TableCell>
                   <TableCell>KYC</TableCell>
                   <TableCell>Action</TableCell>
@@ -105,8 +104,7 @@ const UserComponent = () => {
                       <TableCell>{user.username}</TableCell>
                       <TableCell>{user.phone_number}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.first_name}</TableCell>
-                      <TableCell>{user.last_name}</TableCell>
+                      <TableCell>{user.name || "-"}</TableCell>
                       <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                       <TableCell>{user.kyc ? "Yes" : "No"}</TableCell>
                       <TableCell>

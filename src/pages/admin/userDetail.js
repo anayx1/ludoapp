@@ -259,10 +259,16 @@ const UserDetail = () => {
             <Divider />
             <Stack spacing={1.5} sx={{ mt: 2 }}>
               <DetailLine label="Id" value={userDetails.id} />
-              <DetailLine label="Name" value={userDetails.username || "-"} />
+              <DetailLine label="Name" value={userDetails.name || "-"} />
               <DetailLine label="Mobile" value={userDetails.phone_number} />
               <DetailLine label="Win" value={userDetails.metric.win} />
-              <DetailLine label="Cash" value={userDetails.wallet.balance} />
+              <DetailLine
+                label="Cash"
+                value={
+                  userDetails.wallet.balance -
+                  userDetails.wallet.withdrawable_balance
+                }
+              />
               <DetailLine
                 label="Total Balance"
                 value={userDetails.wallet.balance}
@@ -276,7 +282,7 @@ const UserDetail = () => {
                 variant="outlined"
                 fullWidth
                 size="small"
-                value={userDetails.referral_code}
+                value={userDetails.referrer_details || "-"}
                 InputProps={{
                   readOnly: true,
                 }}
@@ -286,7 +292,12 @@ const UserDetail = () => {
               Actions
             </Typography>
             <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+              sx={{
+                display: "flex",
+                justifyContent: "space-evenly",
+                mt: 1,
+                flexWrap: "wrap",
+              }}
             >
               <Button
                 variant="contained"

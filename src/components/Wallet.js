@@ -76,13 +76,17 @@ const Wallet = () => {
               </span>
             </div>
             <div style={{ fontSize: "20px" }}>
-              <b> ₹ {user_details?.wallet?.balance}</b>
+              <b>
+                {" "}
+                ₹{" "}
+                {user_details?.wallet?.balance -
+                  user_details?.wallet?.withdrawable_balance}
+              </b>
             </div>
             <div style={{ width: "100%" }}>
               <Button
-                style={{ width: "100%", background:"black" }}
+                style={{ width: "100%", background: "black" }}
                 variant="contained"
-
                 onClick={addCash}
               >
                 Add
@@ -127,7 +131,7 @@ const Wallet = () => {
             </div>
             <div style={{ width: "100%" }}>
               <Button
-                style={{ width: "100%", background:"black" }}
+                style={{ width: "100%", background: "black" }}
                 variant="contained"
                 onClick={Withdraw}
               >
