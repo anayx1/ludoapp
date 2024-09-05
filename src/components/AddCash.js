@@ -13,7 +13,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { io } from "socket.io-client";
 
 const AddCash = () => {
   const [step, setStep] = useState(1);
@@ -30,41 +29,19 @@ const AddCash = () => {
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
   const router = useRouter();
 
-    const [userId, setUserId] = useState(null);
-    const [socket, setSocket] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [socket, setSocket] = useState(null);
 
-    const setSocketIo = () => {
-      const socketIo = io("https://socket.aoneludo.com");
-      setSocket(socketIo);
-      if (socketIo.connected) {
-        onConnect();
-      }
+  const setSocketIo = (socketIo) => {
+    setSocket(socketIo);
+  };
 
-      function onConnect() {
-        
-        socketIo.emit("user-joined", userId);
-        socketIo.on("balance-update", (data) => {
-          if(data === userId){
-            fetchDepositData();
-          }
-        });
-      }
-
-      function onDisconnect() {}
-
-      socketIo.on("connect", onConnect);
-      socketIo.on("disconnect", onDisconnect);
-    };
-
-    useEffect(() => {
-      setSocketIo();
-      return () => {
-        if (socket) {
-          socket.off("connect", onConnect);
-          socket.off("disconnect", onDisconnect);
-        }
-      };
-    }, []);
+  const socketIo = typeof window !== "undefined" && window.socket;
+  useEffect(() => {
+    if (socketIo) {
+      setSocketIo(socketIo);
+    }
+  }, [socketIo]);
 
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData"));
@@ -73,7 +50,9 @@ const AddCash = () => {
       setWalletId(userData.user_details.wallet.wallet_id);
     }
 
-    setUserId(userData && userData.user_details ? userData.user_details.id : "");
+    setUserId(
+      userData && userData.user_details ? userData.user_details.id : ""
+    );
 
     const fetchAdminDetails = async () => {
       setIsLoading(true);
@@ -175,7 +154,7 @@ const AddCash = () => {
       );
 
       if (response.data.error === false) {
-        if(socket){
+        if (socket) {
           socket.emit("deposit-request", userId);
         }
         setModalContent({
