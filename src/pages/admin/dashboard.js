@@ -20,34 +20,34 @@ const Dashboard = () => {
     try {
       // Fetch commission data
       const commissionResponse = await axios.get(
-        `https://ludotest.pythonanywhere.com/panel/get-commisions/`
+        `https://admin.aoneludo.com/panel/get-commisions/`
       );
       // console.log("Commission Data:", commissionResponse.data);
       setCommissionData(commissionResponse.data);
 
       // Fetch deposit data
       const depositResponse = await axios.get(
-        `https://ludotest.pythonanywhere.com/panel/total-deposits/`
+        `https://admin.aoneludo.com/panel/total-deposits/`
       );
       // console.log("Deposit Data:", depositResponse.data);
       setDepositData(depositResponse.data);
 
       // Fetch withdrawal data
       const withdrawalResponse = await axios.get(
-        `https://ludotest.pythonanywhere.com/panel/total-withdrawals/`
+        `https://admin.aoneludo.com/panel/total-withdrawals/`
       );
       // console.log("Withdrawal Data:", withdrawalResponse.data);
       setWithdrawalData(withdrawalResponse.data);
 
       const userBalance = await axios.get(
-        `https://ludotest.pythonanywhere.com/panel/get-user-total/`
+        `https://admin.aoneludo.com/panel/get-user-total/`
       );
       // console.log("Withdrawal Data:", withdrawalResponse.data);
       setUserBalance(userBalance.data);
 
       // Fetch battle data
       const battleResponse = await axios.get(
-        `https://ludotest.pythonanywhere.com/panel/number-of-games/`
+        `https://admin.aoneludo.com/panel/number-of-games/`
       );
       // console.log("Battle Data:", battleResponse.data);
       setBattleData(battleResponse.data);

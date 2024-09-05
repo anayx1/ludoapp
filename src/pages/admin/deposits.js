@@ -74,7 +74,7 @@ const DepositComponent = () => {
   const fetchDepositData = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/panel/get-deposits/"
+        "https://admin.aoneludo.com/panel/get-deposits/"
       );
       setDepositData({
         pending_deposits: response.data.pending_deposits || [],
@@ -91,7 +91,7 @@ const DepositComponent = () => {
   const fetchUserData = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/panel/get-users/"
+        "https://admin.aoneludo.com/panel/get-users/"
       );
       setUserData(response.data.users || []);
     } catch (error) {
@@ -146,7 +146,7 @@ const DepositComponent = () => {
   const handleApprove = async (deposit) => {
     try {
       const response = await axios.put(
-        `https://ludotest.pythonanywhere.com/panel/approve-deposits/${deposit.wallet.id}/${deposit.id}/`
+        `https://admin.aoneludo.com/panel/approve-deposits/${deposit.wallet.id}/${deposit.id}/`
       );
 
       if (response.data.error === false) {
@@ -194,7 +194,7 @@ const DepositComponent = () => {
   const handleDecline = async (deposit) => {
     try {
       const response = await axios.put(
-        `https://ludotest.pythonanywhere.com/panel/decline-deposits/${deposit.wallet.id}/${deposit.id}/`
+        `https://admin.aoneludo.com/panel/decline-deposits/${deposit.wallet.id}/${deposit.id}/`
       );
 
       if (response.data.error === false) {
@@ -241,7 +241,7 @@ const DepositComponent = () => {
 
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/panel/deposit/${selectedUser.id}/`,
+        `https://admin.aoneludo.com/panel/deposit/${selectedUser.id}/`,
         { deposit_amount: amount }
       );
 
@@ -266,7 +266,7 @@ const DepositComponent = () => {
 
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/penalty/deduct/${selectedUser.id}/`,
+        `https://admin.aoneludo.com/penalty/deduct/${selectedUser.id}/`,
         { amount, reason }
       );
 

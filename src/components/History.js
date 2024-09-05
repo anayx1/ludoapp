@@ -33,7 +33,7 @@ const History = () => {
 
       try {
         const response = await axios.get(
-          `https://ludotest.pythonanywhere.com/api/user-history/${userId}/`
+          `https://admin.aoneludo.com/api/user-history/${userId}/`
         );
         setHistory(response.data);
         setLoading(false);

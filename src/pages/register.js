@@ -207,7 +207,7 @@ const Register = () => {
 
       try {
         const registrationResponse = await axios.post(
-          "https://ludotest.pythonanywhere.com/user/sign-up/",
+          "https://admin.aoneludo.com/user/sign-up/",
           submissionData
         );
         console.log("Registration response:", registrationResponse.data);
@@ -218,7 +218,7 @@ const Register = () => {
 
           try {
             const walletResponse = await axios.post(
-              `https://ludotest.pythonanywhere.com/api/create-wallet/${userId}/`,
+              `https://admin.aoneludo.com/api/create-wallet/${userId}/`,
               { balance: "0.00" }
             );
 

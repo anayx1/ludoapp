@@ -74,7 +74,7 @@ const WithdrawalsComponent = () => {
   const fetchWithdrawalData = async () => {
     try {
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/panel/get-withdrawals/"
+        "https://admin.aoneludo.com/panel/get-withdrawals/"
       );
       setWithdrawalData({
         pending_withdrawals: response.data.pending_withdrawals || [],
@@ -128,7 +128,7 @@ const WithdrawalsComponent = () => {
   const handleApprove = async (withdrawal) => {
     try {
       const response = await axios.put(
-        `https://ludotest.pythonanywhere.com/panel/approve-withdrawal/${withdrawal.wallet.id}/${withdrawal.id}/`
+        `https://admin.aoneludo.com/panel/approve-withdrawal/${withdrawal.wallet.id}/${withdrawal.id}/`
       );
       if (response.data.error === false) {
         console.log("Withdrawal approved successfully");
@@ -147,7 +147,7 @@ const WithdrawalsComponent = () => {
   const handleDecline = async (withdrawal) => {
     try {
       const response = await axios.put(
-        `https://ludotest.pythonanywhere.com/panel/decline-withdrawal/${withdrawal.wallet.id}/${withdrawal.id}/`
+        `https://admin.aoneludo.com/panel/decline-withdrawal/${withdrawal.wallet.id}/${withdrawal.id}/`
       );
       if (response.data.error === false) {
         console.log("Withdrawal declined successfully");

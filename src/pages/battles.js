@@ -124,7 +124,7 @@ const CreateBattle = () => {
     }
     try {
       const response = await fetch(
-        "https://ludotest.pythonanywhere.com/api/get-challenges/"
+        "https://admin.aoneludo.com/api/get-challenges/"
       );
       const data = await response.json();
       if (data.error === false) {
@@ -280,7 +280,7 @@ const CreateBattle = () => {
     try {
       setBtnLoading(true);
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
+        `https://admin.aoneludo.com/api/create-room/${currentUserId}/`,
         {
           method: "POST",
           headers: {
@@ -356,7 +356,7 @@ const CreateBattle = () => {
 
   //   try {
   //     const response = await fetch(
-  //       `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
+  //       `https://admin.aoneludo.com/api/create-room/${currentUserId}/`,
   //       {
   //         method: "POST",
   //         headers: {
@@ -403,7 +403,7 @@ const CreateBattle = () => {
 
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/api/create-room/${currentUserId}/`,
+        `https://admin.aoneludo.com/api/create-room/${currentUserId}/`,
         {
           method: "POST",
           headers: {
@@ -440,7 +440,7 @@ const CreateBattle = () => {
 
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${battle.challenge_id}/`,
+        `https://admin.aoneludo.com/api/make-challenge-running/${battle.challenge_id}/`,
         {
           method: "PUT",
           headers: {
@@ -482,7 +482,7 @@ const CreateBattle = () => {
   //   try {
   //     // First, join the challenge
   //     const joinResponse = await fetch(
-  //       `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${selectedBattle.challenge_id}/`,
+  //       `https://admin.aoneludo.com/api/join-challenge/${currentUserId}/${selectedBattle.challenge_id}/`,
   //       {
   //         method: "POST",
   //         headers: {
@@ -500,7 +500,7 @@ const CreateBattle = () => {
 
   //     // Then, send the PUT request to make the challenge running
   //     const makeRunningResponse = await fetch(
-  //       `https://ludotest.pythonanywhere.com/api/make-challenge-running/${selectedBattle.challenge_id}/`,
+  //       `https://admin.aoneludo.com/api/make-challenge-running/${selectedBattle.challenge_id}/`,
   //       {
   //         method: "PUT",
   //         headers: {
@@ -541,7 +541,7 @@ const CreateBattle = () => {
     try {
       // First, join the challenge
       const joinResponse = await fetch(
-        `https://ludotest.pythonanywhere.com/api/join-challenge/${currentUserId}/${battle.challenge_id}/`,
+        `https://admin.aoneludo.com/api/join-challenge/${currentUserId}/${battle.challenge_id}/`,
         {
           method: "POST",
           headers: {
@@ -559,7 +559,7 @@ const CreateBattle = () => {
 
       // Then, send the PUT request to make the challenge running
       const makeRunningResponse = await fetch(
-        `https://ludotest.pythonanywhere.com/api/make-challenge-running/${battle.challenge_id}/`,
+        `https://admin.aoneludo.com/api/make-challenge-running/${battle.challenge_id}/`,
         {
           method: "PUT",
           headers: {
@@ -587,7 +587,7 @@ const CreateBattle = () => {
   const handleCancelBattle = async (challengeId) => {
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/api/cancel-challenge/${challengeId}/`,
+        `https://admin.aoneludo.com/api/cancel-challenge/${challengeId}/`,
         {
           method: "POST",
           headers: {
@@ -615,7 +615,7 @@ const CreateBattle = () => {
       try {
         console.log("Starting to fetch admin data...");
         const url =
-          "https://ludotest.pythonanywhere.com/panel/get-admin-details/5/";
+          "https://admin.aoneludo.com/panel/get-admin-details/5/";
         const response = await axios.get(url);
 
         const dataArray = Array.isArray(response.data)
@@ -887,7 +887,7 @@ const CreateBattle = () => {
 
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/api/create-room-result/${currentUserId}/${currentChallengeId}/`,
+        `https://admin.aoneludo.com/api/create-room-result/${currentUserId}/${currentChallengeId}/`,
         {
           method: "POST",
           body: formData,

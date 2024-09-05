@@ -50,7 +50,7 @@ const SettingsPage = () => {
   const fetchAdminDetails = async () => {
     try {
       const response = await fetch(
-        "https://ludotest.pythonanywhere.com/panel/get-admin-details/5/"
+        "https://admin.aoneludo.com/panel/get-admin-details/5/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -76,7 +76,7 @@ const SettingsPage = () => {
   const fetchMaintenanceStatus = async () => {
     try {
       const response = await fetch(
-        "https://ludotest.pythonanywhere.com/maintainance/check/"
+        "https://admin.aoneludo.com/maintainance/check/"
       );
       if (response.ok) {
         const data = await response.json();
@@ -100,7 +100,7 @@ const SettingsPage = () => {
   const updateSettings = async () => {
     try {
       const response = await fetch(
-        "https://ludotest.pythonanywhere.com/panel/update-settings/5/",
+        "https://admin.aoneludo.com/panel/update-settings/5/",
         {
           method: "PUT",
           headers: {
@@ -140,7 +140,7 @@ const SettingsPage = () => {
       }
 
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/panel/update-upi/5/`,
+        `https://admin.aoneludo.com/panel/update-upi/5/`,
         {
           method: "POST",
           body: formData,
@@ -164,7 +164,7 @@ const SettingsPage = () => {
   const handleUpdateWhatsapp = async () => {
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/panel/update-whatsapp-number/5/`,
+        `https://admin.aoneludo.com/panel/update-whatsapp-number/5/`,
         {
           method: "PUT",
           headers: {
@@ -196,8 +196,8 @@ const SettingsPage = () => {
   const handleMaintenanceToggle = async () => {
     const newMaintenanceState = !maintenanceMode;
     const url = newMaintenanceState
-      ? "https://ludotest.pythonanywhere.com/maintainance/turn-on/"
-      : "https://ludotest.pythonanywhere.com/maintainance/turn-off/";
+      ? "https://admin.aoneludo.com/maintainance/turn-on/"
+      : "https://admin.aoneludo.com/maintainance/turn-off/";
 
     try {
       const response = await fetch(url, { method: "POST" });

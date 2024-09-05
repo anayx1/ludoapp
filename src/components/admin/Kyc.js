@@ -34,7 +34,7 @@ const KYCComponent = () => {
   const fetchKycData = async () => {
     try {
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/kyc/get-kyc/"
+        "https://admin.aoneludo.com/kyc/get-kyc/"
       );
       if (!response.data.error) {
         console.log("KYC Data:", response.data);
@@ -113,7 +113,7 @@ const KYCComponent = () => {
   const handleApprove = async (kycItem) => {
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/kyc/approve/${kycItem.user}/${kycItem.id}/`
+        `https://admin.aoneludo.com/kyc/approve/${kycItem.user}/${kycItem.id}/`
       );
       if (!response.data.error) {
         setSnackbar({ open: true, message: "KYC approved successfully" });
@@ -131,7 +131,7 @@ const KYCComponent = () => {
   const handleDecline = async (kycItem) => {
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/kyc/decline/${kycItem.user}/${kycItem.id}/`
+        `https://admin.aoneludo.com/kyc/decline/${kycItem.user}/${kycItem.id}/`
       );
       if (!response.data.error) {
         setSnackbar({ open: true, message: "KYC declined successfully" });

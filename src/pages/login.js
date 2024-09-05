@@ -108,7 +108,7 @@ const LoginForm = () => {
 
         try {
           const backendResponse = await axios.post(
-            `https://ludotest.pythonanywhere.com/auth/verify-otp/`,
+            `https://admin.aoneludo.com/auth/verify-otp/`,
             {
               phone_number: phoneNumber,
               verify_status: true,

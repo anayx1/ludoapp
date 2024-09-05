@@ -83,7 +83,7 @@ const Withdraw = () => {
         );
       }
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/panel/get-admin-details/5/"
+        "https://admin.aoneludo.com/panel/get-admin-details/5/"
       );
       // const { user_details } = response.data;
 
@@ -223,7 +223,7 @@ const Withdraw = () => {
 
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/api/create-withdrawal/${walletId}/`,
+        `https://admin.aoneludo.com/api/create-withdrawal/${walletId}/`,
         payload,
         {
           headers: {

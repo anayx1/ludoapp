@@ -26,7 +26,7 @@ const UserComponent = () => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          "https://ludotest.pythonanywhere.com/panel/get-users/"
+          "https://admin.aoneludo.com/panel/get-users/"
         );
         setUserData(response.data.users || []);
       } catch (error) {

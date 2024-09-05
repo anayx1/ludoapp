@@ -38,7 +38,7 @@ const withAuth = (WrappedComponent) => {
 
           // Check maintenance mode
           const maintenanceResponse = await axios.get(
-            "https://ludotest.pythonanywhere.com/maintainance/check/"
+            "https://admin.aoneludo.com/maintainance/check/"
           );
 
           if (maintenanceResponse.data.maintenance) {

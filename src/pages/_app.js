@@ -114,8 +114,9 @@ MyApp.getInitialProps = async (appContext) => {
 
   // Fetch WhatsApp number
   const res = await fetch(
-    `https://ludotest.pythonanywhere.com/panel/get-admin-details/5/`
+    `https://admin.aoneludo.com/panel/get-admin-details/5/`
   );
+  console.log(res,"sfsdf")
   const data = await res.json();
 
   return {

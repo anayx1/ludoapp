@@ -31,7 +31,7 @@ export default function TemporaryDrawer() {
   const fetchUserDetails = async (userId, token) => {
     try {
       const response = await fetch(
-        `https://ludotest.pythonanywhere.com/auth/get-user-details/${userId}/`,
+        `https://admin.aoneludo.com/auth/get-user-details/${userId}/`,
         {
           method: "GET",
           headers: {

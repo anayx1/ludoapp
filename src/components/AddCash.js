@@ -79,7 +79,7 @@ const AddCash = () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          "https://ludotest.pythonanywhere.com/panel/get-admin-details/5/"
+          "https://admin.aoneludo.com/panel/get-admin-details/5/"
         );
         const { upi_id, upi_qr_url, min_deposit } = response.data;
         setUpiId(upi_id);
@@ -165,7 +165,7 @@ const AddCash = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/api/create-deposit/${walletId}/`,
+        `https://admin.aoneludo.com/api/create-deposit/${walletId}/`,
         formData,
         {
           headers: {

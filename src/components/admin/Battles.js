@@ -47,7 +47,7 @@ const BattleModal = ({
 
     try {
       await axios.put(
-        `https://ludotest.pythonanywhere.com/panel/approve-room-results/${selectedChallenge.room.room_id}/${selectedWinner}/`
+        `https://admin.aoneludo.com/panel/approve-room-results/${selectedChallenge.room.room_id}/${selectedWinner}/`
       );
       onClose();
       refreshChallenges();
@@ -61,7 +61,7 @@ const BattleModal = ({
 
     try {
       await axios.post(
-        `https://ludotest.pythonanywhere.com/api/cancel-challenge/${selectedChallenge.challenge_id}/`
+        `https://admin.aoneludo.com/api/cancel-challenge/${selectedChallenge.challenge_id}/`
       );
       onClose();
       refreshChallenges();
@@ -445,7 +445,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     }
     try {
       const response = await axios.get(
-        "https://ludotest.pythonanywhere.com/api/get-challenges/"
+        "https://admin.aoneludo.com/api/get-challenges/"
       );
       setChallenges(response.data);
       setIsLoading(false);

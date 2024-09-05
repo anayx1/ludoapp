@@ -87,7 +87,7 @@ const KycForm = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/kyc/upload/${userId}/`,
+        `https://admin.aoneludo.com/kyc/upload/${userId}/`,
         formDataToSend,
         {
           headers: {

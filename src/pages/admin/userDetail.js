@@ -58,10 +58,10 @@ const UserDetail = () => {
       try {
         const [userResponse, historyResponse] = await Promise.all([
           axios.get(
-            `https://ludotest.pythonanywhere.com/auth/get-detailed-user-details/${id}/`
+            `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
           ),
           axios.get(
-            `https://ludotest.pythonanywhere.com/api/user-history/${id}/`
+            `https://admin.aoneludo.com/api/user-history/${id}/`
           ),
         ]);
 
@@ -92,7 +92,7 @@ const UserDetail = () => {
   const handleBlock = async (userId) => {
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/panel/block/${userId}/`
+        `https://admin.aoneludo.com/panel/block/${userId}/`
       );
       console.log("Block Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
@@ -129,7 +129,7 @@ const UserDetail = () => {
   const handleUnblock = async (userId) => {
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/panel/unblock/${userId}/`
+        `https://admin.aoneludo.com/panel/unblock/${userId}/`
       );
       console.log("Unblock Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
@@ -168,7 +168,7 @@ const UserDetail = () => {
 
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/panel/deposit/${id}/`,
+        `https://admin.aoneludo.com/panel/deposit/${id}/`,
         { deposit_amount: amount }
       );
 
@@ -201,7 +201,7 @@ const UserDetail = () => {
 
     try {
       const response = await axios.post(
-        `https://ludotest.pythonanywhere.com/penalty/deduct/${id}/`,
+        `https://admin.aoneludo.com/penalty/deduct/${id}/`,
         { amount, reason }
       );
 

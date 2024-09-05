@@ -47,7 +47,7 @@ const LoginFormAdmin = () => {
       try {
         const response = await axios({
           method: "post",
-          url: "https://ludotest.pythonanywhere.com/auth/login",
+          url: "https://admin.aoneludo.com/auth/login",
           data: formData,
           headers: { "Content-Type": "application/json" },
         });
