@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/router";
+import Loader from "@/components/Loader";
 
 const Register = () => {
   const router = useRouter();
@@ -286,7 +287,7 @@ const Register = () => {
 
   return (
     <>
-    <div
+      <div
         style={{
           display: "flex",
           justifyContent: "center",
@@ -441,12 +442,33 @@ const Register = () => {
             >
               {isLoading ? <CircularProgress size={24} /> : "Sign Up"}
             </Button>
-            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+                Already have an account?{" "}
+                <Link href="/login" color="primary">
+                  Login
+                </Link>
+              </Typography>
+              <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+                <Link href="/admin/" color="primary">
+                  Admin Login
+                </Link>
+              </Typography>
+            </div>
+            {/* <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               Already have an account?{" "}
               <Link href="/login" color="primary">
                 Login
               </Link>
-            </Typography>
+            </Typography> */}
           </Box>
         </Box>
       </Container>
@@ -465,7 +487,7 @@ const Register = () => {
             zIndex: 9999,
           }}
         >
-          <CircularProgress size={60} />
+          <Loader size={60} />
         </Box>
       )}
       <Snackbar

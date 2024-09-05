@@ -20,12 +20,386 @@ import {
   InputAdornment,
   Snackbar,
   Alert,
+  Grid,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import axios from "axios";
 import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
+import Loader from "@/components/Loader";
 
+const BattleModal = ({ isOpen, onClose, selectedChallenge }) => {
+  // const handleWinnerChange = (event) => {
+  //   setSelectedWinner(event.target.value);
+  // };
+
+  // const handleSubmitResult = async () => {
+  //   if (!selectedChallenge || !selectedWinner) return;
+
+  //   try {
+  //     await axios.put(
+  //       `https://admin.aoneludo.com/panel/approve-room-results/${selectedChallenge.room.room_id}/${selectedWinner}/`
+  //     );
+  //     onClose();
+  //     refreshChallenges();
+  //   } catch (error) {
+  //     console.error("Error submitting result:", error);
+  //   }
+  // };
+
+  // const handleCancelBattle = async () => {
+  //   if (!selectedChallenge) return;
+
+  //   try {
+  //     await axios.post(
+  //       `https://admin.aoneludo.com/api/cancel-challenge/${selectedChallenge.challenge_id}/`
+  //     );
+  //     onClose();
+  //     refreshChallenges();
+  //   } catch (error) {
+  //     console.error("Error cancelling battle:", error);
+  //   }
+  // };
+
+  if (!selectedChallenge) return null;
+
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      aria-labelledby="challenge-details-modal"
+      aria-describedby="challenge-details-description"
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 320,
+          bgcolor: "background.paper",
+          border: "2px solid #000",
+          boxShadow: 24,
+          p: 4,
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
+        <Typography variant="h6" component="h2" gutterBottom>
+          Id: {selectedChallenge.challenge_id}
+        </Typography>
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ mb: 2 }}
+        >
+          <Grid item xs={5} container direction="column" alignItems="center">
+            <img src={"/a1.svg"} alt="Avatar" width="50" height="50" />
+            <Typography variant="subtitle2">
+              {selectedChallenge.created_by.username}
+            </Typography>
+          </Grid>
+          <Grid item xs={2}>
+            <Typography variant="h6" align="center">
+              V/S
+            </Typography>
+          </Grid>
+          <Grid item xs={5} container direction="column" alignItems="center">
+            <img src={"/a2.svg"} alt="Avatar" width="50" height="50" />
+            <Typography variant="subtitle2">
+              {selectedChallenge.opponent
+                ? selectedChallenge.opponent.username
+                : "Waiting"}
+            </Typography>
+          </Grid>
+        </Grid>
+        {/* <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            Actions
+          </Typography>
+          <Grid container spacing={2} sx={{ alignItems: "center" }}>
+            <Grid item xs={6}>
+              <Select
+                fullWidth
+                value={selectedWinner}
+                onChange={handleWinnerChange}
+                displayEmpty
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return "Select Winner";
+                  }
+                  const winner =
+                    selected === selectedChallenge.created_by.id
+                      ? selectedChallenge.created_by
+                      : selectedChallenge.opponent;
+                  return winner ? winner.username : "";
+                }}
+              >
+                <MenuItem value={selectedChallenge.created_by.id}>
+                  {selectedChallenge.created_by.username}
+                </MenuItem>
+                {selectedChallenge.opponent && (
+                  <MenuItem value={selectedChallenge.opponent.id}>
+                    {selectedChallenge.opponent.username}
+                  </MenuItem>
+                )}
+              </Select>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleSubmitResult}
+                disabled={!selectedWinner}
+              >
+                Submit
+              </Button>
+            </Grid>
+          </Grid>
+          <Button
+            variant="contained"
+            color="error"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={handleCancelBattle}
+          >
+            Cancel Battle
+          </Button>
+        </Box> */}
+        <Typography variant="h6" gutterBottom>
+          Battle Info
+        </Typography>
+        <Grid container spacing={1}>
+          <Grid item xs={6}>
+            <Typography>Status</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>
+              {selectedChallenge.status === "O"
+                ? "Open"
+                : selectedChallenge.status === "R"
+                ? "Running"
+                : selectedChallenge.status === "C"
+                ? "Closed"
+                : "Pending"}
+            </Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Room Code</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>{selectedChallenge?.room?.room_id}</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Amount</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>{selectedChallenge.room.room_amount}</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Prize</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>
+              {Number(selectedChallenge.room.room_amount) * 1.95}
+            </Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Admin Commission</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>5</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Refer Commission</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>-</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>Date & Time</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography>
+              {selectedChallenge.room_result?.timestamp
+                ? dayjs(selectedChallenge.room_result.timestamp).format(
+                    "MM/DD/YYYY hh:mm:ss A"
+                  )
+                : "-"}
+            </Typography>
+          </Grid>
+        </Grid>
+        <Divider sx={{ mt: 2 }} />
+
+        <Box sx={{ mt: 2 }}>
+          <Grid container justifyContent="space-between" alignItems="center">
+            <Grid item>
+              <Typography variant="h6">Creator</Typography>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() =>
+                  window.open(
+                    selectedChallenge.room_result?.creator_screenshot,
+                    "_blank"
+                  )
+                }
+                disabled={!selectedChallenge.room_result?.creator_screenshot}
+              >
+                View
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid container spacing={1}>
+            <Grid item xs={6}>
+              <Typography>Id</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>{selectedChallenge.created_by.id}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Name</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>{selectedChallenge.created_by.username}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Mobile</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.created_by.phone_number}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cash</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>0.0</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Win</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>0.5</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Status</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.room_result?.creator_status || "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cancellation Reason</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.creator_cancellation_reason || "-"}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Box>
+        <Divider sx={{ mt: 2 }} />
+
+        <Box sx={{ mt: 2 }}>
+          <Grid container justifyContent="space-between" alignItems="center">
+            <Grid item>
+              <Typography variant="h6">Joiner</Typography>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() =>
+                  window.open(
+                    selectedChallenge.room_result?.opponent_screenshot,
+                    "_blank"
+                  )
+                }
+                disabled={!selectedChallenge.room_result?.opponent_screenshot}
+              >
+                View
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid container spacing={1}>
+            <Grid item xs={6}>
+              <Typography>Id</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.opponent
+                  ? selectedChallenge.opponent.id
+                  : "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Name</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.opponent
+                  ? selectedChallenge.opponent.username
+                  : "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Mobile</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.opponent
+                  ? selectedChallenge.opponent.phone_number
+                  : "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cash</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>0.0</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Win</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>-</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Status</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.room_result?.opponent_status || "-"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>Cancellation Reason</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography>
+                {selectedChallenge.opponent_cancellation_reason || "-"}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={onClose}
+          sx={{ mt: 4, width: "100%" }}
+        >
+          Close
+        </Button>
+      </Box>
+    </Modal>
+  );
+};
 const DetailLine = ({ label, value }) => (
   <Typography variant="body2">
     <span style={{ marginRight: "8px", fontWeight: "bold" }}>{label}:</span>
@@ -39,14 +413,19 @@ const UserDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(""); // "add" or "deduct"
+  const [modalType, setModalType] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [detailsModalOpen, setdetailsModalOpen] = useState(false);
+  const [winningChallange, setWinningChallange] = useState();
+  const [winningChallangeData, setWinningChallangeData] = useState();
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
-  }); // Snackbar state
+  });
   const router = useRouter();
   const { id } = router.query;
 
@@ -56,17 +435,23 @@ const UserDetail = () => {
 
       setIsLoading(true);
       try {
-        const [userResponse, historyResponse] = await Promise.all([
-          axios.get(
-            `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
-          ),
-          axios.get(
-            `https://admin.aoneludo.com/api/user-history/${id}/`
-          ),
-        ]);
+        const [userResponse, historyResponse, battleResponse] =
+          await Promise.all([
+            axios.get(
+              `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
+            ),
+            axios.get(`https://admin.aoneludo.com/api/user-history/${id}/`),
+            axios.get(`https://admin.aoneludo.com/api/battle-history/${id}/`),
+          ]);
 
         setUserDetails(userResponse.data.user_details);
-        setWalletHistory(historyResponse.data.wallet_history || []);
+
+        // Merge and process wallet history
+        const mergedHistory = processWalletHistory(
+          historyResponse.data,
+          battleResponse.data
+        );
+        setWalletHistory(mergedHistory);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to fetch user details and history. Please try again.");
@@ -77,6 +462,91 @@ const UserDetail = () => {
 
     fetchData();
   }, [id]);
+  useEffect(() => {
+    const fetchChallengeData = async () => {
+      if (!selectedChallenge) return;
+
+      try {
+        const response = await axios.get(
+          `https://admin.aoneludo.com/panel/get-challenge-details/${selectedChallenge}/`
+        );
+
+        setWinningChallangeData(response?.data.challenge);
+      } catch (error) {
+        console.error("Error fetching challenge data:", error);
+        setError("Failed to fetch challenge details. Please try again.");
+      }
+    };
+
+    fetchChallengeData();
+  }, [selectedChallenge]);
+
+  const processWalletHistory = (walletData, battleData) => {
+    let history = [...walletData.wallet_history];
+
+    // Add lost battles to history
+    battleData.lost_history.forEach((lost) => {
+      history.push({
+        deposit_amount: lost.lost_amount,
+        deposit_date: lost.timestamp,
+        status: "Successful",
+        tag: "Lost",
+        challenge_id: lost.challenge_id,
+      });
+    });
+
+    // Sort history by date
+    history.sort((a, b) => new Date(b.deposit_date) - new Date(a.deposit_date));
+
+    // Calculate running balance
+    let balance = 0;
+    return history.map((item) => {
+      const operator = [
+        "Admin Deposit",
+        "Winning",
+        "Refunds",
+        "Deposit",
+      ].includes(item.tag)
+        ? "+"
+        : "-";
+      const amount = parseFloat(item.deposit_amount);
+
+      // Update balance based on operator
+      if (operator === "+") {
+        balance += amount;
+      } else {
+        balance -= amount;
+      }
+
+      return {
+        ...item,
+        cash: item.tag === "Winning" ? 0 : amount,
+        amount: amount,
+        win: item.tag === "Winning" ? amount : 0,
+        operator: operator,
+        closing: Math.abs(balance).toFixed(2), // Use absolute value to remove negative sign
+      };
+    });
+  };
+
+  useEffect(() => {
+    const fetchChallengeData = async () => {
+      if (!id || !winningChallange) return;
+
+      try {
+        const response = await axios.get(
+          `https://admin.aoneludo.com/panel/get-challenge-details/${winningChallange}/`
+        );
+
+        setWinningChallangeData(response?.data.challenge);
+      } catch (error) {
+        console.error("Error fetching challenge data:", error);
+        setError("Failed to fetch challenge details. Please try again.");
+      }
+    };
+
+    fetchChallengeData();
+  }, [winningChallange]);
 
   const handleOpenModal = (type) => {
     setModalType(type);
@@ -94,7 +564,6 @@ const UserDetail = () => {
       const response = await axios.post(
         `https://admin.aoneludo.com/panel/block/${userId}/`
       );
-      console.log("Block Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
         setSnackbar({
           open: true,
@@ -108,7 +577,6 @@ const UserDetail = () => {
           severity: "error",
         });
       }
-      // Set a timeout to reload the page after 3 seconds
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -119,7 +587,6 @@ const UserDetail = () => {
         message: "Error blocking user",
         severity: "error",
       });
-      // Set a timeout to reload the page after 3 seconds
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -131,7 +598,6 @@ const UserDetail = () => {
       const response = await axios.post(
         `https://admin.aoneludo.com/panel/unblock/${userId}/`
       );
-      console.log("Unblock Response:", response.data); // Log response for debugging
       if (response.status === 200 && response.data.error === false) {
         setSnackbar({
           open: true,
@@ -145,7 +611,6 @@ const UserDetail = () => {
           severity: "error",
         });
       }
-      // Set a timeout to reload the page after 3 seconds
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -156,7 +621,6 @@ const UserDetail = () => {
         message: "Error unblocking user",
         severity: "error",
       });
-      // Set a timeout to reload the page after 3 seconds
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -233,7 +697,7 @@ const UserDetail = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  if (isLoading) return <CircularProgress />;
+  if (isLoading) return <Loader />;
   if (error) return <Typography color="error">{error}</Typography>;
   if (!userDetails) return <Typography>No user details found</Typography>;
 
@@ -319,7 +783,6 @@ const UserDetail = () => {
                 sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
               >
                 {userDetails.is_blocked ? (
-                  // Show Unblock button if is_blocked is true
                   <Button
                     variant="outlined"
                     color="success"
@@ -329,7 +792,6 @@ const UserDetail = () => {
                     Unblock
                   </Button>
                 ) : (
-                  // Show Block button if is_blocked is false
                   <Button
                     variant="outlined"
                     color="error"
@@ -359,33 +821,37 @@ const UserDetail = () => {
                 value={userDetails.kyc_details?.document_number || "-"}
               />
             </Stack>
-            <Box
-              component="img"
-              sx={{
-                width: "auto",
-                maxWidth: "250px",
-                height: "auto",
-                objectFit: "cover",
-                mt: 2,
-                borderRadius: 1,
-              }}
-              alt="KYC Document"
-              src={userDetails.kyc_details?.front_side}
-            />
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                component="img"
+                sx={{
+                  width: "auto",
+                  maxWidth: "250px",
+                  height: "auto",
+                  objectFit: "cover",
+                  mt: 2,
+                  borderRadius: 1,
+                }}
+                alt="KYC Document"
+                src={userDetails.kyc_details?.front_side}
+              />
+            </Box>
             <Typography style={{ textAlign: "center" }}>Front Side</Typography>
-            <Box
-              component="img"
-              sx={{
-                width: "auto",
-                maxWidth: "250px",
-                height: "auto",
-                objectFit: "cover",
-                mt: 2,
-                borderRadius: 1,
-              }}
-              alt="KYC Document"
-              src={userDetails.kyc_details?.back_side}
-            />
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                component="img"
+                sx={{
+                  width: "auto",
+                  maxWidth: "250px",
+                  height: "auto",
+                  objectFit: "cover",
+                  mt: 2,
+                  borderRadius: 1,
+                }}
+                alt="KYC Document"
+                src={userDetails.kyc_details?.back_side}
+              />
+            </Box>
             <Typography style={{ textAlign: "center" }}>Back Side</Typography>
           </CardContent>
         </Card>
@@ -405,18 +871,55 @@ const UserDetail = () => {
                     <TableCell>Sno.</TableCell>
                     <TableCell>Label</TableCell>
                     <TableCell>Txn Id</TableCell>
+                    <TableCell>Cash</TableCell>
                     <TableCell>Amount</TableCell>
+                    <TableCell>Win</TableCell>
+                    <TableCell>Operator</TableCell>
+                    <TableCell>Closing</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {walletHistory.map((item, index) => (
-                    <TableRow key={item.id}>
+                    <TableRow
+                      key={`${item.challenge_id}-${index}`}
+                      style={{
+                        cursor: ["Winning", "Lost"].includes(item.tag)
+                          ? "pointer"
+                          : "auto",
+                        backgroundColor:
+                          item.tag === "Winning"
+                            ? "rgba(0, 255, 0, 0.1)"
+                            : item.tag === "Lost"
+                            ? "rgba(255, 0, 0, 0.1)"
+                            : "inherit",
+                      }}
+                      onClick={() => {
+                        if (!["Winning", "Lost"].includes(item.tag)) return;
+                        setdetailsModalOpen(true);
+                        setSelectedChallenge(item.challenge_id);
+                      }}
+                    >
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.tag}</TableCell>
-                      <TableCell>{item.txn_id}</TableCell>
-                      <TableCell>{item.deposit_amount}</TableCell>
+                      <TableCell
+                        style={{
+                          color:
+                            item.tag === "Winning"
+                              ? "green"
+                              : item.tag === "Lost"
+                              ? "red"
+                              : "black",
+                        }}
+                      >
+                        {item.tag}
+                      </TableCell>
+                      <TableCell>{item.txn_id || item.challenge_id}</TableCell>
+                      <TableCell>{item.cash.toFixed(2)}</TableCell>
+                      <TableCell>{item.amount.toFixed(2)}</TableCell>
+                      <TableCell>{item.win.toFixed(2)}</TableCell>
+                      <TableCell>{item.operator}</TableCell>
+                      <TableCell>{item.closing}</TableCell>
                       <TableCell>
                         {dayjs(item.deposit_date).format("MM/DD/YYYY HH:mm:ss")}
                       </TableCell>
@@ -486,6 +989,14 @@ const UserDetail = () => {
           </Button>
         </Box>
       </Modal>
+
+      <BattleModal
+        isOpen={detailsModalOpen}
+        onClose={() => {
+          setdetailsModalOpen(false);
+        }}
+        selectedChallenge={winningChallangeData}
+      />
 
       <Snackbar
         open={snackbar.open}
