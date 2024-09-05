@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { io } from "socket.io-client";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;

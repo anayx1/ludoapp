@@ -48,7 +48,8 @@ export default function TemporaryDrawer() {
       socketIo.emit("user-joined", userId);
 
       socketIo.on("balance-update", async (data) => {
-        if (data === userId) {
+        console.log("data", data, userId);
+        if (data == userId) {
           const userData = await fetchUserDetails(userId, token);
           if (userData) {
             setWalletBalance(userData.user_details.wallet.balance || 0);

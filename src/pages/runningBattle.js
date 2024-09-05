@@ -15,10 +15,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
-import { io } from "socket.io-client";
 import Loader from "@/components/Loader";
 
 const RunningBattle = () => {

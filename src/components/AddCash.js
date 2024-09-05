@@ -13,7 +13,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { io } from "socket.io-client";
 
 const AddCash = () => {
   const [step, setStep] = useState(1);
@@ -35,20 +34,6 @@ const AddCash = () => {
 
   const setSocketIo = (socketIo) => {
     setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", userId);
-      socketIo.on("balance-update", (data) => {
-        if (data === userId) {
-          fetchDepositData();
-        }
-      });
-    }
-
-    socketIo.on("connect", onConnect);
   };
 
   const socketIo = typeof window !== "undefined" && window.socket;

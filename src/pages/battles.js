@@ -26,7 +26,6 @@ import {
 } from "@mui/material";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
-import { io } from "socket.io-client";
 import Loader from "@/components/Loader";
 
 const CreateBattle = () => {
@@ -80,12 +79,6 @@ const CreateBattle = () => {
       socketIo.on("battle-result", (data) => {
         console.log("Battle result", data);
         fetchBattles();
-      });
-
-      socketIo.on("balance-update", (data) => {
-        if (data === userId) {
-          fetchWalletBalance();
-        }
       });
     }
     socketIo.on("connect", onConnect);
