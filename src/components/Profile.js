@@ -53,7 +53,7 @@ const Profile = () => {
   const handleUpdateUsername = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/update-username/${userData.user_details.id}/`,
+        `https://admin.aoneludo.com/auth/update-username/${userData.user_details.id}/`,
         {
           method: "PUT",
           headers: {

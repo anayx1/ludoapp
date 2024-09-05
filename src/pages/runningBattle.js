@@ -326,9 +326,9 @@ const RunningBattle = () => {
           {!userHasCancelled && !otherUserHasCancelled && (
             <>
               {battleDetails?.room.update_status && !userResult && (
-                <Box sx={{ mt: 3 }}>
+                <Box sx={{ mt: 3, textAlign: "center" }}>
                   <Typography variant="h6" gutterBottom>
-                    Submit Your Game Result
+                    <b>Submit Your Game Result</b>
                   </Typography>
                   <FormControl component="fieldset" sx={{ width: "100%" }}>
                     <RadioGroup
@@ -349,11 +349,12 @@ const RunningBattle = () => {
                         control={<Radio />}
                         label="Lost"
                       />
+                      {gameOutcome != "W" && gameOutcome != "L" &&
                       <FormControlLabel
                         value="cancel"
                         control={<Radio />}
                         label="Cancel"
-                      />
+                      />}
                     </RadioGroup>
                   </FormControl>
 
@@ -504,7 +505,7 @@ const RunningBattle = () => {
             </Box>
           )}
 
-          {shouldShowCancelButton && !showCancellationOptions && (
+          {shouldShowCancelButton && !showCancellationOptions && !battleDetails?.room.update_status && (
             <Box sx={{ mt: 3 }}>
               <FormControl component="fieldset" fullWidth>
                 <RadioGroup
