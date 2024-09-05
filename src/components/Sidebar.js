@@ -21,12 +21,56 @@ import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
 import CachedIcon from "@mui/icons-material/Cached";
 import HomeIcon from "@mui/icons-material/Home";
 import InstallPWA from "./PWA";
+import { io } from "socket.io-client";
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [userId, setUserId] = useState(null);
+  const [token, setToken] = useState(null);
+
+  const [socket, setSocket] = useState(null);
+
+  const setSocketIo = () => {
+    const socketIo = io("https://socket.aoneludo.com");
+    if(typeof window !== undefined){
+      window.socket = socketIo;
+    }
+
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      socketIo.emit("user-joined", userId);
+
+      socketIo.on("balance-update", async (data) => {
+        console.log("data", data, userId);
+        if (data == userId) {
+          const userData = await fetchUserDetails(userId, token);
+          if (userData) {
+            setWalletBalance(userData.user_details.wallet.balance || 0);
+          }
+        }
+      });
+    }
+
+    function onDisconnect() {
+      socketIo.emit("user-leave", userId);
+    }
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    if (userId) {
+      setSocketIo();
+    }
+  }, [userId]);
 
   const fetchUserDetails = async (userId, token) => {
     try {
@@ -72,7 +116,8 @@ export default function TemporaryDrawer() {
         const parsedData = JSON.parse(storedData);
         setUserData(parsedData);
         setWalletBalance(parsedData.user_details.wallet.balance || 0);
-
+        setUserId(parsedData.user_details.id);
+        setToken(parsedData.token);
         // Fetch latest user details
         const updatedData = await fetchUserDetails(
           parsedData.user_details.id,

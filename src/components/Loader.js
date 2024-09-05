@@ -1,5 +1,5 @@
 import React from 'react';
-import Lottie from 'react-lottie';
+// import Lottie from 'react-lottie';
 import animationData from "@/components/loaderAnimation.json";
 
 const Loader = ({ width = 200, height = 200 }) => {
@@ -14,7 +14,7 @@ const Loader = ({ width = 200, height = 200 }) => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <Lottie options={defaultOptions} height={height} width={width} />
+      {/* <Lottie options={defaultOptions} height={height} width={width} /> */}
     </div>
   );
 };

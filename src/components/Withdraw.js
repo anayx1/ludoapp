@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { io } from "socket.io-client";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -105,39 +104,15 @@ const Withdraw = () => {
     }
   };
 
-    const setSocketIo = () => {
-      const socketIo = io("https://socket.aoneludo.com");
-      setSocket(socketIo);
-      if (socketIo.connected) {
-        onConnect();
-      }
-
-      function onConnect() {
-        socketIo.emit("user-joined", userId);
-        socketIo.on("balance-update", (data) => {
-          if (data === userId) {
-            fetchUserDetails();
-          }
-        });
-      }
-
-      function onDisconnect() {
-
-      }
-
-      socketIo.on("connect", onConnect);
-      socketIo.on("disconnect", onDisconnect);
-    };
+      const socketIo = typeof window !== "undefined" && window.socket;
+      useEffect(() => {
+        if (socketIo) {
+          setSocket(socketIo);
+        }
+      }, [socketIo]);
 
     useEffect(() => {
-      setSocketIo();
       fetchUserDetails();
-      return () => {
-        if (socket) {
-          socket.off("connect", onConnect);
-          socket.off("disconnect", onDisconnect);
-        }
-      };
     }, []);
   const router = useRouter();
 
@@ -234,6 +209,9 @@ const Withdraw = () => {
       );
 
       console.log("Withdrawal request successful:", response.data);
+      if(socket){
+        socket.emit('withdraw-request', userId);
+      }
       setSnackbarOpen(true); // Show success message
     } catch (error) {
       console.error("Error submitting withdrawal request:", error);

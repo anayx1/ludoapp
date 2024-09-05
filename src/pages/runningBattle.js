@@ -15,10 +15,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
-import { io } from "socket.io-client";
 import Loader from "@/components/Loader";
 
 const RunningBattle = () => {
@@ -77,44 +75,34 @@ const RunningBattle = () => {
     }
   };
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
+  const setSocketIo = (socketIo) => {
     setSocket(socketIo);
     if (socketIo.connected) {
       onConnect();
     }
 
     function onConnect() {
-      socketIo.emit("user-joined", userId);
-
       socketIo.on("room-id-created", (data) => {
         if (id === data) {
           fetchBattleDetails();
         }
       });
-
       socketIo.on("battle-cancel", (data) => {
         if (id === data) {
           router.push("/battles");
         }
       });
     }
-
-    function onDisconnect() {}
-
     socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
+  const socketIo = typeof window !== "undefined" && window.socket;
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if (socketIo) {
+      setSocketIo(socketIo);
+    }
+  }, [socketIo]);
+
 
   const handleRoomIdInputChange = (event) => {
     setRoomIdInput(event.target.value);
