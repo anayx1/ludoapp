@@ -77,44 +77,34 @@ const RunningBattle = () => {
     }
   };
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
+  const setSocketIo = (socketIo) => {
     setSocket(socketIo);
     if (socketIo.connected) {
       onConnect();
     }
 
     function onConnect() {
-      socketIo.emit("user-joined", userId);
-
       socketIo.on("room-id-created", (data) => {
         if (id === data) {
           fetchBattleDetails();
         }
       });
-
       socketIo.on("battle-cancel", (data) => {
         if (id === data) {
           router.push("/battles");
         }
       });
     }
-
-    function onDisconnect() {}
-
     socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
+  const socketIo = typeof window !== "undefined" && window.socket;
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if (socketIo) {
+      setSocketIo(socketIo);
+    }
+  }, [socketIo]);
+
 
   const handleRoomIdInputChange = (event) => {
     setRoomIdInput(event.target.value);

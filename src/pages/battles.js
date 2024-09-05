@@ -59,16 +59,9 @@ const CreateBattle = () => {
 
   const [socket, setSocket] = useState(null);
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
+  const setSocketIo = (socketIo) => {
     setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
     function onConnect() {
-      socketIo.emit("user-joined", userId);
-
       socketIo.on("battle-joined", (data) => {
         console.log("Battle joined--------", data);
         fetchBattles();
@@ -95,22 +88,15 @@ const CreateBattle = () => {
         }
       });
     }
-
-    function onDisconnect() {}
-
     socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
+  const socketIo = typeof window !== "undefined" && window.socket;
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if (socketIo) {
+      setSocketIo(socketIo);
+    }
+  }, [socketIo]);
 
   useEffect(() => {
     fetchBattles(true);
@@ -259,7 +245,9 @@ const CreateBattle = () => {
     const amountNum = Number(amount);
 
     if (!isValidAmount(amountNum)) {
-      setErrorMessage("Please enter an amount between 50 and 15000 in multiples of 50. Ex- 50,200,550");
+      setErrorMessage(
+        "Please enter an amount between 50 and 15000 in multiples of 50. Ex- 50,200,550"
+      );
       setIsErrorModalOpen(true);
       return;
     }
@@ -300,7 +288,10 @@ const CreateBattle = () => {
       const data = await response.json();
       console.log("Room created successfully:", data);
       setCreatedRoomId(data.room_id);
-      socket && socket.emit("battle-created", JSON.stringify(data));
+      if (socket) {
+        socket.emit("battle-created", JSON.stringify(data));
+        socket.emit("balance-update", userId);
+      }
       setBtnLoading(false);
       setAmount(""); // Clear the input field after successful creation
       fetchBattles(); // Refresh the list of battles
@@ -574,8 +565,10 @@ const CreateBattle = () => {
 
       const makeRunningData = await makeRunningResponse.json();
       console.log("Challenge set to running:", makeRunningData);
-      socket &&
+      if (socket) {
         socket.emit("battle-joined", JSON.stringify({ userId: currentUserId }));
+        socket.emit("balance-update", userId);
+      }
       setCreatedRoomId(joinData.room_id);
       fetchBattles();
     } catch (error) {
@@ -601,7 +594,10 @@ const CreateBattle = () => {
       }
 
       console.log(`Battle with ID: ${challengeId} cancelled successfully`);
-      socket && socket.emit("battle-cancel", challengeId);
+      if (socket) {
+        socket.emit("battle-cancel", challengeId);
+        socket.emit("balance-update", userId);
+      }
       fetchBattles();
       // window.location.reload();
     } catch (error) {
@@ -614,8 +610,7 @@ const CreateBattle = () => {
     const fetchAdminData = async () => {
       try {
         console.log("Starting to fetch admin data...");
-        const url =
-          "https://admin.aoneludo.com/panel/get-admin-details/5/";
+        const url = "https://admin.aoneludo.com/panel/get-admin-details/5/";
         const response = await axios.get(url);
 
         const dataArray = Array.isArray(response.data)
@@ -1010,9 +1005,9 @@ const CreateBattle = () => {
         </Box>
       </Paper>
 
-      {isLoading ?  (
+      {isLoading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-         <Loader />
+          <Loader />
         </Box>
       ) : (
         <>
