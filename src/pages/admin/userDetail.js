@@ -725,7 +725,8 @@ const UserDetail = () => {
               <DetailLine label="Id" value={userDetails.id} />
               <DetailLine label="Name" value={userDetails.name || "-"} />
               <DetailLine label="Mobile" value={userDetails.phone_number} />
-              <DetailLine label="Win" value={userDetails.metric.win} />
+              <DetailLine label="Win" value={userDetails.wallet.withdrawable_balance} />
+              {console.log(userDetails)}
               <DetailLine
                 label="Cash"
                 value={
