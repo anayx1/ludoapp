@@ -1,8 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { CircularProgress, Box } from "@mui/material";
+import { Box } from "@mui/material";
 import axios from "axios";
+import Loader from "./Loader";
 
 const withAuth = (WrappedComponent) => {
   return (props) => {
@@ -72,7 +73,7 @@ const withAuth = (WrappedComponent) => {
           alignItems="center"
           minHeight="100vh"
         >
-          <CircularProgress />
+          <Loader />
         </Box>
       );
     }

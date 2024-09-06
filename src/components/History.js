@@ -10,8 +10,8 @@ import {
   ListItemText,
   Divider,
   Paper,
-  CircularProgress,
 } from "@mui/material";
+import Loader from "./Loader";
 
 const History = () => {
   const [value, setValue] = useState(0);
@@ -220,7 +220,7 @@ const History = () => {
   );
 
   if (loading) {
-    return <CircularProgress />;
+    return <Loader />;
   }
 
   return (

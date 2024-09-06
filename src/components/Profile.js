@@ -33,7 +33,7 @@ const Profile = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("userData");
     Cookies.remove("userData");
-    setWalletBalance(0);
+    // setWalletBalance(0);
     window.location.href = "/login";
   };
 
@@ -53,7 +53,7 @@ const Profile = () => {
   const handleUpdateUsername = async () => {
     try {
       const response = await fetch(
-        `https://admin.aoneludo.com/auth/update-username/${userData.user_details.id}/`,
+        `https://admin.aoneludo.com/auth/update-username/${userData.user_details.id}/`, 
         {
           method: "PUT",
           headers: {

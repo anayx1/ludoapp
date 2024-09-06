@@ -24,11 +24,11 @@ import {
   Grid,
   Select,
   MenuItem,
-  CircularProgress,
   Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { io } from "socket.io-client";
+import Loader from "../Loader";
 
 const BattleModal = ({
   isOpen,
@@ -547,7 +547,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     });
   }, [tabValue, searchTerm, challenges]);
 
-  if (isLoading) return <CircularProgress />;
+  if (isLoading) return <Loader />;
   if (error) return <Typography color="error">Error: {error}</Typography>;
 
   return (

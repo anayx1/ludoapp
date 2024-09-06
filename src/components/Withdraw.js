@@ -15,10 +15,10 @@ import {
   DialogTitle,
   Alert,
   Snackbar,
-  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
+import Loader from "./Loader";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -64,8 +64,8 @@ const Withdraw = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
 
-    const [userId, setUserId] = useState(null);
-    const [socket, setSocket] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   const fetchUserDetails = async () => {
     try {
@@ -104,16 +104,16 @@ const Withdraw = () => {
     }
   };
 
-      const socketIo = typeof window !== "undefined" && window.socket;
-      useEffect(() => {
-        if (socketIo) {
-          setSocket(socketIo);
-        }
-      }, [socketIo]);
+  const socketIo = typeof window !== "undefined" && window.socket;
+  useEffect(() => {
+    if (socketIo) {
+      setSocket(socketIo);
+    }
+  }, [socketIo]);
 
-    useEffect(() => {
-      fetchUserDetails();
-    }, []);
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
   const router = useRouter();
 
   const handleTabChange = (event, newIndex) => {
@@ -209,8 +209,8 @@ const Withdraw = () => {
       );
 
       console.log("Withdrawal request successful:", response.data);
-      if(socket){
-        socket.emit('withdraw-request', userId);
+      if (socket) {
+        socket.emit("withdraw-request", userId);
       }
       setSnackbarOpen(true); // Show success message
     } catch (error) {
@@ -347,11 +347,7 @@ const Withdraw = () => {
           onClick={handleSubmit}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Withdraw"
-          )}
+          {isLoading ? <Loader size={24} color="inherit" /> : "Withdraw"}
         </Button>
       </TabPanel>
       <TabPanel value={tabIndex} index={1}>
@@ -421,11 +417,7 @@ const Withdraw = () => {
           onClick={handleSubmit}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Withdraw"
-          )}
+          {isLoading ? <Loader size={24} color="inherit" /> : "Withdraw"}
         </Button>
       </TabPanel>
       <Dialog open={open} onClose={handleClose}>

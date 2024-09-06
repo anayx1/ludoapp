@@ -16,8 +16,6 @@ import {
   Paper,
   Modal,
   Snackbar,
-  CircularProgress,
-  Avatar,
   FormControl,
   RadioGroup,
   FormControlLabel,
@@ -978,7 +976,7 @@ const CreateBattle = () => {
               }}
             >
               {btnLoading ? (
-                <CircularProgress size={24} style={{ color: "#fff" }} />
+                <Loader size={24} style={{ color: "#fff" }} />
               ) : (
                 "SET"
               )}

@@ -7,12 +7,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  CircularProgress,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import Loader from "./Loader";
 
 const AddCash = () => {
   const [step, setStep] = useState(1);
@@ -229,7 +229,7 @@ const AddCash = () => {
                 Add Money
               </Typography>
               {isLoading ? (
-                <CircularProgress />
+                <Loader />
               ) : (
                 <>
                   <img src={qrUrl} height={200} width={200} alt="qr" />
@@ -360,7 +360,7 @@ const AddCash = () => {
                 disabled={!amount || !screenshot || !utrId || isLoading}
               >
                 {isLoading ? (
-                  <CircularProgress size={24} color="inherit" />
+                  <Loader size={24} color="inherit" />
                 ) : (
                   "Submit"
                 )}
@@ -398,7 +398,7 @@ const AddCash = () => {
             zIndex: 9999,
           }}
         >
-          <CircularProgress size={60} />
+          <Loader size={60} />
         </Box>
       )}
     </section>

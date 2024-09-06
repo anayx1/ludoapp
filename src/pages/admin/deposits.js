@@ -21,6 +21,8 @@ import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import withAdminAuth from "@/components/withAdminAuth";
 import { io } from "socket.io-client";
+import { useRouter } from "next/router";
+
 
 const DepositComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -40,7 +42,14 @@ const DepositComponent = () => {
   const [modalType, setModalType] = useState("credit");
 
   const [socket, setSocket] = useState(null);
+  const router = useRouter();
 
+  const handleViewDetails = (userId) => {
+    router.push({
+      pathname: "/admin/userDetail",
+      query: { id: userId },
+    });
+  };
   const setSocketIo = () => {
     const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
@@ -292,8 +301,14 @@ const DepositComponent = () => {
       return (
         <TableRow key={item.id}>
           <TableCell>{index + 1}</TableCell>
-          <TableCell>{item.username}</TableCell>
-          <TableCell>{item.phone_number}</TableCell>
+          <TableCell>
+          <span
+            onClick={() => handleViewDetails(item.id)}
+            style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+          >
+            {item.username}
+          </span>
+        </TableCell>          <TableCell>{item.phone_number}</TableCell>
           <TableCell>{item.email}</TableCell>
           <TableCell>
             <Button
@@ -313,7 +328,14 @@ const DepositComponent = () => {
       return (
         <TableRow key={item.id}>
           <TableCell>{index + 1}</TableCell>
-          <TableCell>{item.wallet.user.username}</TableCell>
+          <TableCell>
+          <span
+            onClick={() => handleViewDetails(item.id)}
+            style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+          >
+            {item.wallet.user.username}
+          </span>
+        </TableCell>
           <TableCell>{item.wallet.user.phone_number}</TableCell>
           <TableCell>{item.deposit_amount}</TableCell>
           <TableCell>{new Date(item.deposit_date).toLocaleString()}</TableCell>
