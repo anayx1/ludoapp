@@ -18,6 +18,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 import Loader from "@/components/Loader";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const RunningBattle = () => {
   const router = useRouter();
@@ -102,7 +103,6 @@ const RunningBattle = () => {
       setSocketIo(socketIo);
     }
   }, [socketIo]);
-
 
   const handleRoomIdInputChange = (event) => {
     setRoomIdInput(event.target.value);
@@ -194,6 +194,7 @@ const RunningBattle = () => {
     setCancellationReason(event.target.value);
   };
 
+  
   const handleCancelSubmit = async () => {
     if (!cancellationReason) return;
 
@@ -313,6 +314,27 @@ const RunningBattle = () => {
 
           {!userHasCancelled && !otherUserHasCancelled && (
             <>
+              {battleDetails?.room.update_status && status !== "pending" && (
+                <Box
+                  sx={{
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ mr: 2 }}>
+                    Room Code: {battleDetails?.room.room_id}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<ContentCopyIcon />}
+                    onClick={copyRoomCode}
+                  >
+                    Copy
+                  </Button>
+                </Box>
+              )}
               {battleDetails?.room.update_status && !userResult && (
                 <Box sx={{ mt: 3, textAlign: "center" }}>
                   <Typography variant="h6" gutterBottom>
@@ -337,12 +359,13 @@ const RunningBattle = () => {
                         control={<Radio />}
                         label="Lost"
                       />
-                      {gameOutcome != "W" && gameOutcome != "L" &&
-                      <FormControlLabel
-                        value="cancel"
-                        control={<Radio />}
-                        label="Cancel"
-                      />}
+                      {/* {gameOutcome != "W" && gameOutcome != "L" && ( */}
+                        <FormControlLabel
+                          value="cancel"
+                          control={<Radio />}
+                          label="Cancel"
+                        />
+                       {/* )} */}
                     </RadioGroup>
                   </FormControl>
 
@@ -493,27 +516,29 @@ const RunningBattle = () => {
             </Box>
           )}
 
-          {shouldShowCancelButton && !showCancellationOptions && !battleDetails?.room.update_status && (
-            <Box sx={{ mt: 3 }}>
-              <FormControl component="fieldset" fullWidth>
-                <RadioGroup
-                  aria-label="cancel-confirm"
-                  name="cancel-confirm"
-                  onChange={(e) => {
-                    if (e.target.value === "confirm") {
-                      setShowCancellationOptions(true);
-                    }
-                  }}
-                >
-                  <FormControlLabel
-                    value="confirm"
-                    control={<Radio />}
-                    label="Cancel Battle"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Box>
-          )}
+          {shouldShowCancelButton &&
+            !showCancellationOptions &&
+            !battleDetails?.room.update_status && (
+              <Box sx={{ mt: 3 }}>
+                <FormControl component="fieldset" fullWidth>
+                  <RadioGroup
+                    aria-label="cancel-confirm"
+                    name="cancel-confirm"
+                    onChange={(e) => {
+                      if (e.target.value === "confirm") {
+                        setShowCancellationOptions(true);
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value="confirm"
+                      control={<Radio />}
+                      label="Cancel Battle"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Box>
+            )}
 
           {showCancellationOptions && (
             <Box sx={{ mt: 3 }}>
