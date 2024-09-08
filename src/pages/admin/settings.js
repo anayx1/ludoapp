@@ -112,6 +112,7 @@ const SettingsPage = () => {
             max_deposit: settings.max_deposit,
             min_deposit: settings.min_deposit,
             max_withdraw: settings.max_withdraw,
+            min_withdraw: settings.min_withdraw,
             upi_id: settings.upi_id,
             upi_name: settings.upi_name,
             upi_qr: "",

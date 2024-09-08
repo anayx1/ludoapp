@@ -7,9 +7,9 @@ import {
   Typography,
   Paper,
   Snackbar,
-  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import Loader from "@/components/Loader";
 
 const KycForm = () => {
   const [formData, setFormData] = useState({
@@ -207,7 +207,7 @@ const KycForm = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={isLoading}
             >
-              {isLoading ? <CircularProgress size={24} /> : "Submit"}
+              {isLoading ? <Loader size={24} /> : "Submit"}
             </Button>
           </Box>
         </Paper>
@@ -233,7 +233,7 @@ const KycForm = () => {
             zIndex: 9999,
           }}
         >
-          <CircularProgress size={60} />
+          <Loader size={60} />
         </Box>
       )}
     </>

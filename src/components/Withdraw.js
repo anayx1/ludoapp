@@ -63,6 +63,7 @@ const Withdraw = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
+  const [effectiveMaxWithdraw, setEffectiveMaxWithdraw] = useState(Infinity);
 
   const [userId, setUserId] = useState(null);
   const [socket, setSocket] = useState(null);
@@ -84,16 +85,9 @@ const Withdraw = () => {
       const response = await axios.get(
         "https://admin.aoneludo.com/panel/get-admin-details/5/"
       );
-      // const { user_details } = response.data;
-
-      // setIsKycCompleted(res.kyc);
-      // setWalletId(user_details.wallet?.wallet_id);
-      // setWithdrawableBalance(
-      //   parseFloat(user_details.wallet?.withdrawable_balance) || 0
-      // );
       console.log(response, "response");
-      setMinWithdraw(parseFloat(response?.data?.min_withdraw) || 0);
-      setMaxWithdraw(parseFloat(response?.data?.max_withdraw) || Infinity);
+      setMinWithdraw(parseFloat(response.data.min_withdraw) || 0);
+      setMaxWithdraw(parseFloat(response.data.max_withdraw) || Infinity);
     } catch (error) {
       console.error("Error fetching user details:", error);
       setModalContent({
@@ -102,6 +96,35 @@ const Withdraw = () => {
       });
       setOpen(true);
     }
+  };
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    // Calculate effective max withdraw after API call and state updates
+    setEffectiveMaxWithdraw(Math.min(maxWithdraw, withdrawableBalance));
+  }, [maxWithdraw, withdrawableBalance]);
+
+  const validateWithdrawalAmount = (amount) => {
+    const withdrawalAmount = parseFloat(amount);
+
+    if (isNaN(withdrawalAmount)) {
+      return "Please enter a valid withdrawal amount.";
+    }
+
+    if (withdrawalAmount < minWithdraw) {
+      return `Minimum withdrawal amount is ₹${minWithdraw.toFixed(2)}.`;
+    }
+
+    if (withdrawalAmount > effectiveMaxWithdraw) {
+      return `Maximum withdrawal amount is ₹${effectiveMaxWithdraw.toFixed(
+        2
+      )}.`;
+    }
+
+    return null; // No error
   };
 
   const socketIo = typeof window !== "undefined" && window.socket;
@@ -140,27 +163,27 @@ const Withdraw = () => {
     }));
   };
 
-  const validateWithdrawalAmount = (amount) => {
-    const withdrawalAmount = parseFloat(amount);
+  // const validateWithdrawalAmount = (amount) => {
+  //   const withdrawalAmount = parseFloat(amount);
 
-    if (isNaN(withdrawalAmount)) {
-      return "Please enter a valid withdrawal amount.";
-    }
+  //   if (isNaN(withdrawalAmount)) {
+  //     return "Please enter a valid withdrawal amount.";
+  //   }
 
-    if (withdrawalAmount < minWithdraw) {
-      return `Minimum withdrawal amount is ₹${minWithdraw.toFixed(2)}.`;
-    }
+  //   if (withdrawalAmount < minWithdraw) {
+  //     return `Minimum withdrawal amount is ₹${minWithdraw.toFixed(2)}.`;
+  //   }
 
-    const effectiveMaxWithdraw = Math.min(maxWithdraw, withdrawableBalance);
+  //   const effectiveMaxWithdraw = Math.min(maxWithdraw, withdrawableBalance);
 
-    if (withdrawalAmount > effectiveMaxWithdraw) {
-      return `Maximum withdrawal amount is ₹${effectiveMaxWithdraw.toFixed(
-        2
-      )}.`;
-    }
+  //   if (withdrawalAmount > effectiveMaxWithdraw) {
+  //     return `Maximum withdrawal amount is ₹${effectiveMaxWithdraw.toFixed(
+  //       2
+  //     )}.`;
+  //   }
 
-    return null; // No error
-  };
+  //   return null; // No error
+  // };
 
   const handleSubmit = async () => {
     if (!walletId) {
@@ -456,7 +479,7 @@ const Withdraw = () => {
             zIndex: 9999,
           }}
         >
-          <CircularProgress size={60} />
+          <Loader size={60} />
         </Box>
       )}
     </Container>
