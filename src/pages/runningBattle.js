@@ -18,7 +18,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
 import Loader from "@/components/Loader";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const RunningBattle = () => {
   const router = useRouter();
@@ -194,7 +194,6 @@ const RunningBattle = () => {
     setCancellationReason(event.target.value);
   };
 
-  
   const handleCancelSubmit = async () => {
     if (!cancellationReason) return;
 
@@ -360,12 +359,12 @@ const RunningBattle = () => {
                         label="Lost"
                       />
                       {/* {gameOutcome != "W" && gameOutcome != "L" && ( */}
-                        <FormControlLabel
-                          value="cancel"
-                          control={<Radio />}
-                          label="Cancel"
-                        />
-                       {/* )} */}
+                      <FormControlLabel
+                        value="cancel"
+                        control={<Radio />}
+                        label="Cancel"
+                      />
+                      {/* )} */}
                     </RadioGroup>
                   </FormControl>
 
@@ -498,20 +497,87 @@ const RunningBattle = () => {
             </>
           )}
 
-          {userHasCancelled && (
-            <Box sx={{ mt: 3, textAlign: "center" }}>
-              <Typography variant="h6">
-                You have cancelled this battle. Contact admin for further
-                assistance.
-              </Typography>
-            </Box>
-          )}
-
           {otherUserHasCancelled && (
             <Box sx={{ mt: 3, textAlign: "center" }}>
               <Typography variant="h6">
                 The other player has cancelled this battle. Contact admin for
                 further assistance.
+              </Typography>
+            </Box>
+          )}
+
+          {/* Show cancel option for both users, even if the other has cancelled */}
+          {!userHasCancelled && !userResult && !battleDetails?.room_result && (
+            <>
+              {!showCancellationOptions &&
+                !battleDetails?.room.update_status && (
+                  <Box sx={{ mt: 3 }}>
+                    <FormControl component="fieldset" fullWidth>
+                      <RadioGroup
+                        aria-label="cancel-confirm"
+                        name="cancel-confirm"
+                        onChange={(e) => {
+                          if (e.target.value === "confirm") {
+                            setShowCancellationOptions(true);
+                          }
+                        }}
+                      >
+                        <FormControlLabel
+                          value="confirm"
+                          control={<Radio />}
+                          label="Cancel Battle"
+                        />
+                      </RadioGroup>
+                    </FormControl>
+                  </Box>
+                )}
+
+              {showCancellationOptions && (
+                <Box sx={{ mt: 3 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <Select
+                      value={cancellationReason}
+                      onChange={handleCancellationReasonChange}
+                      displayEmpty
+                      inputProps={{ "aria-label": "Cancel reason" }}
+                    >
+                      <MenuItem value="" disabled>
+                        Select cancellation reason
+                      </MenuItem>
+                      <MenuItem value="No room code">No room code</MenuItem>
+                      <MenuItem value="Game not Started">
+                        Game not Started
+                      </MenuItem>
+                      <MenuItem value="Not Joined">Not Joined</MenuItem>
+                      <MenuItem value="Not Playing">Not Playing</MenuItem>
+                      <MenuItem value="Dont want to play">
+                        Don't want to play
+                      </MenuItem>
+                      <MenuItem value="Opponent abusing">
+                        Opponent abusing
+                      </MenuItem>
+                      <MenuItem value="Other">Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleCancelSubmit}
+                    disabled={isSubmitting || !cancellationReason}
+                  >
+                    {isSubmitting ? <Loader /> : "Submit Cancellation"}
+                  </Button>
+                </Box>
+              )}
+            </>
+          )}
+
+          {userHasCancelled && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <Typography variant="h6">
+                You have cancelled this battle. Contact admin for further
+                assistance.
               </Typography>
             </Box>
           )}
