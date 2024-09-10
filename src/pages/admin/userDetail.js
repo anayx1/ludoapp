@@ -454,7 +454,8 @@ const UserDetail = () => {
         // Merge and process wallet history
         const mergedHistory = processWalletHistory(
           historyResponse.data,
-          battleResponse.data
+          battleResponse.data,
+          historyResponse.data.penalty_history
         );
         setWalletHistory(mergedHistory);
       } catch (error) {
@@ -486,7 +487,7 @@ const UserDetail = () => {
     fetchChallengeData();
   }, [selectedChallenge]);
 
-  const processWalletHistory = (walletData, battleData) => {
+  const processWalletHistory = (walletData, battleData, penaltyData) => {
     let history = [...walletData.wallet_history];
 
     // Add lost battles to history
@@ -497,6 +498,18 @@ const UserDetail = () => {
         status: "Successful",
         tag: "Lost",
         challenge_id: lost.challenge_id,
+      });
+    });
+
+    // Add penalty history to wallet history
+    penaltyData.forEach((penalty) => {
+      history.push({
+        deposit_amount: penalty.amount,
+        deposit_date: penalty.created_at,
+        status: "Successful",
+        tag: "Penalty",
+        challenge_id: null,
+        reason: penalty.reason,
       });
     });
 
@@ -728,9 +741,15 @@ const UserDetail = () => {
             <Divider />
             <Stack spacing={1.5} sx={{ mt: 2 }}>
               <DetailLine label="Id" value={userDetails.id} />
-              <DetailLine label="Name" value={userDetails.name || "-"} />
+              <DetailLine
+                label="Name"
+                value={userDetails.kyc_details?.full_name || "-"}
+              />
               <DetailLine label="Mobile" value={userDetails.phone_number} />
-              <DetailLine label="Win" value={userDetails.wallet.withdrawable_balance} />
+              <DetailLine
+                label="Win"
+                value={userDetails.wallet.withdrawable_balance}
+              />
               {console.log(userDetails)}
               <DetailLine
                 label="Cash"
@@ -887,7 +906,7 @@ const UserDetail = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {walletHistory.map((item, index) => (
+                  {walletHistory.reverse().map((item, index) => (
                     <TableRow
                       key={`${item.challenge_id}-${index}`}
                       style={{

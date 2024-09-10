@@ -489,7 +489,18 @@ const BattlesComponent = ({ initialTab = 0 }) => {
   useEffect(() => {
     fetchChallenges();
   }, []);
+  const handleCancelOpenBattle = async (id) => {
+    if (!id) return;
 
+    try {
+      await axios.post(
+        `https://admin.aoneludo.com/api/cancel-challenge/${id}/`
+      );
+      fetchChallenges()
+        } catch (error) {
+      console.error("Error cancelling battle:", error);
+    }
+  };
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     // Update the URL when tab changes
@@ -590,18 +601,16 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                   <TableCell>Opponent</TableCell>
                   <TableCell>Opponent Phone</TableCell>
                   <TableCell>Amount</TableCell>
-                  {tabValue === 0 && (
-                    <TableCell>Created at</TableCell>
-                  )
-                  }
+                  {tabValue === 0 && <TableCell>Created at</TableCell>}
                   {showActionColumn && <TableCell>Action</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredData.length > 0 ? (
-                  filteredData.map((row) => (
+                  filteredData.reverse().map((row) => (
                     <TableRow key={row.challenge_id}>
                       <TableCell>{row.challenge_id}</TableCell>
+                      {console.log(filteredData)}
                       <TableCell>
                         <Button
                           onClick={() =>
@@ -624,10 +633,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                           : "N/A"}
                       </TableCell>
                       <TableCell>{row.room.room_amount}</TableCell>
-                      {tabValue === 0 && (
-                    <TableCell> - </TableCell>
-                  )
-                  }
+                      {tabValue === 0 && <TableCell> - </TableCell>}
                       {showActionColumn && (
                         <TableCell>
                           {tabValue === 0 && ( // Only show for open battles
