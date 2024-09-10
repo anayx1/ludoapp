@@ -105,12 +105,7 @@ const BattleModal = ({
           sx={{ mb: 2 }}
         >
           <Grid item xs={5} container direction="column" alignItems="center">
-          <img
-                  src={'/a1.svg'}
-                  alt="Avatar"
-                  width="50"
-                  height="50"
-                />
+            <img src={"/a1.svg"} alt="Avatar" width="50" height="50" />
             <Typography variant="subtitle2">
               {selectedChallenge.created_by.username}
             </Typography>
@@ -121,12 +116,7 @@ const BattleModal = ({
             </Typography>
           </Grid>
           <Grid item xs={5} container direction="column" alignItems="center">
-          <img
-                  src={'/a2.svg'}
-                  alt="Avatar"
-                  width="50"
-                  height="50"
-                />
+            <img src={"/a2.svg"} alt="Avatar" width="50" height="50" />
             <Typography variant="subtitle2">
               {selectedChallenge.opponent
                 ? selectedChallenge.opponent.username
@@ -437,10 +427,9 @@ const BattlesComponent = ({ initialTab = 0 }) => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [selectedWinner, setSelectedWinner] = useState("");
   const [socket, setSocket] = useState(null);
-  const showActionColumn = tabValue == 3 || tabValue === 1; // Show only for Pending tab
-
+  const showActionColumn = tabValue === 3 || tabValue === 1 || tabValue === 0; // Show for Pending, Running, and Open tabs
   const fetchChallenges = async (loading = true) => {
-    if(loading){
+    if (loading) {
       setIsLoading(true);
     }
     try {
@@ -463,7 +452,6 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     }
 
     function onConnect() {
-
       socketIo.emit("user-joined", "admin");
 
       socketIo.on("update-stats", () => {
@@ -471,9 +459,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
       });
     }
 
-    function onDisconnect() {
-
-    }
+    function onDisconnect() {}
 
     socketIo.on("connect", onConnect);
     socketIo.on("disconnect", onDisconnect);
@@ -599,6 +585,10 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                   <TableCell>Opponent</TableCell>
                   <TableCell>Opponent Phone</TableCell>
                   <TableCell>Amount</TableCell>
+                  {tabValue === 0 && (
+                    <TableCell>Created at</TableCell>
+                  )
+                  }
                   {showActionColumn && <TableCell>Action</TableCell>}
                 </TableRow>
               </TableHead>
@@ -607,7 +597,18 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                   filteredData.map((row) => (
                     <TableRow key={row.challenge_id}>
                       <TableCell>{row.challenge_id}</TableCell>
-                      <TableCell>{row.created_by.username}</TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() =>
+                            router.push(
+                              `/admin/userDetail?id=${row.created_by.id}`
+                            )
+                          }
+                          style={{ textTransform: "none", padding: 0 }}
+                        >
+                          {row.created_by.username}
+                        </Button>
+                      </TableCell>{" "}
                       <TableCell>{row.room.user.phone_number}</TableCell>
                       <TableCell>
                         {row.opponent ? row.opponent.username : "N/A"}
@@ -618,14 +619,31 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                           : "N/A"}
                       </TableCell>
                       <TableCell>{row.room.room_amount}</TableCell>
+                      {tabValue === 0 && (
+                    <TableCell> - </TableCell>
+                  )
+                  }
                       {showActionColumn && (
                         <TableCell>
-                          <Button
-                            variant="contained"
-                            onClick={() => handleActionClick(row)}
-                          >
-                            View
-                          </Button>
+                          {tabValue === 0 && ( // Only show for open battles
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() =>
+                                handleCancelOpenBattle(row.challenge_id)
+                              }
+                            >
+                              Cancel Battle
+                            </Button>
+                          )}
+                          {showActionColumn && tabValue !== 0 && (
+                            <Button
+                              variant="contained"
+                              onClick={() => handleActionClick(row)}
+                            >
+                              View
+                            </Button>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>

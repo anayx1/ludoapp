@@ -23,7 +23,6 @@ import withAdminAuth from "@/components/withAdminAuth";
 import { io } from "socket.io-client";
 import { useRouter } from "next/router";
 
-
 const DepositComponent = () => {
   const [tabValue, setTabValue] = useState(0);
   const [depositData, setDepositData] = useState({
@@ -302,13 +301,18 @@ const DepositComponent = () => {
         <TableRow key={item.id}>
           <TableCell>{index + 1}</TableCell>
           <TableCell>
-          <span
-            onClick={() => handleViewDetails(item.id)}
-            style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-          >
-            {item.username}
-          </span>
-        </TableCell>          <TableCell>{item.phone_number}</TableCell>
+            <span
+              onClick={() => handleViewDetails(item.wallet.user.id)}
+              style={{
+                cursor: "pointer",
+                color: "blue",
+                textDecoration: "underline",
+              }}
+            >
+              {item.username}
+            </span>
+          </TableCell>{" "}
+          <TableCell>{item.phone_number}</TableCell>
           <TableCell>{item.email}</TableCell>
           <TableCell>
             <Button
@@ -329,13 +333,17 @@ const DepositComponent = () => {
         <TableRow key={item.id}>
           <TableCell>{index + 1}</TableCell>
           <TableCell>
-          <span
-            onClick={() => handleViewDetails(item.id)}
-            style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-          >
-            {item.wallet.user.username}
-          </span>
-        </TableCell>
+            <span
+              onClick={() => handleViewDetails(item.wallet.user.id)}
+              style={{
+                cursor: "pointer",
+                color: "blue",
+                textDecoration: "underline",
+              }}
+            >
+              {item.wallet.user.username}
+            </span>
+          </TableCell>
           <TableCell>{item.wallet.user.phone_number}</TableCell>
           <TableCell>{item.deposit_amount}</TableCell>
           <TableCell>{new Date(item.deposit_date).toLocaleString()}</TableCell>

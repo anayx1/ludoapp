@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { Router, useRouter } from "next/router";
 
 const KYCComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -28,9 +29,17 @@ const KYCComponent = () => {
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
-
   const [socket, setSocket] = useState(null);
+  const router = useRouter(); // Add this line
 
+  const handleNameClick = (userId) => {
+    if (typeof window !== "undefined") {
+      router.push({
+        pathname: "/admin/userDetail",
+        query: { id: userId },
+      });
+    }
+  };
   const fetchKycData = async () => {
     try {
       const response = await axios.get(
@@ -49,7 +58,6 @@ const KYCComponent = () => {
     }
   };
 
-
   const setSocketIo = () => {
     const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
@@ -58,7 +66,6 @@ const KYCComponent = () => {
     }
 
     function onConnect() {
-
       socketIo.emit("user-joined", "admin");
 
       socketIo.on("update-stats", () => {
@@ -66,8 +73,7 @@ const KYCComponent = () => {
       });
     }
 
-    function onDisconnect() {
-    }
+    function onDisconnect() {}
 
     socketIo.on("connect", onConnect);
     socketIo.on("disconnect", onDisconnect);
@@ -224,7 +230,15 @@ const KYCComponent = () => {
               {getTabData.length > 0 ? (
                 getTabData.map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.full_name}</TableCell>
+                    <TableCell>
+                      <Button
+                        color="primary"
+                        onClick={() => handleNameClick(row.user)}
+                        style={{ textTransform: "none" }}
+                      >
+                        {row.full_name}
+                      </Button>
+                    </TableCell>{" "}
                     <TableCell>{row.document_number}</TableCell>
                     <TableCell>{renderImageButton(row.front_side)}</TableCell>
                     <TableCell>{renderImageButton(row.back_side)}</TableCell>

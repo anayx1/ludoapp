@@ -24,6 +24,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import CloseIcon from "@mui/icons-material/Close";
 import withAdminAuth from "@/components/withAdminAuth";
 import { io } from "socket.io-client";
+import { useRouter } from "next/router";
 
 const WithdrawalsComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -37,39 +38,38 @@ const WithdrawalsComponent = () => {
   const [resetData, setResetData] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-    const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const router = useRouter();
 
-    const setSocketIo = () => {
-      const socketIo = io("https://socket.aoneludo.com");
-      setSocket(socketIo);
-      if (socketIo.connected) {
-        onConnect();
+  const setSocketIo = () => {
+    const socketIo = io("https://socket.aoneludo.com");
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      socketIo.emit("user-joined", "admin");
+      socketIo.on("withdraw-request", (data) => {
+        setResetData(true);
+      });
+    }
+
+    function onDisconnect() {}
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    setSocketIo();
+    return () => {
+      if (socket) {
+        socket.off("connect", onConnect);
+        socket.off("disconnect", onDisconnect);
       }
-
-      function onConnect() {
-        socketIo.emit("user-joined", "admin");
-        socketIo.on("withdraw-request", (data) => {
-          setResetData(true);
-        });
-      }
-
-      function onDisconnect() {
-        
-      }
-
-      socketIo.on("connect", onConnect);
-      socketIo.on("disconnect", onDisconnect);
     };
-
-    useEffect(() => {
-      setSocketIo();
-      return () => {
-        if (socket) {
-          socket.off("connect", onConnect);
-          socket.off("disconnect", onDisconnect);
-        }
-      };
-    }, []);
+  }, []);
 
   const fetchWithdrawalData = async () => {
     try {
@@ -84,6 +84,13 @@ const WithdrawalsComponent = () => {
     } catch (error) {
       console.error("Error fetching withdrawal data:", error);
     }
+  };
+
+  const handleUsernameClick = (userId) => {
+    router.push({
+      pathname: "/admin/userDetail",
+      query: { id: userId }, // Pass the user ID to the details page
+    });
   };
 
   useEffect(() => {
@@ -170,7 +177,14 @@ const WithdrawalsComponent = () => {
       getTabData.map((withdrawal, index) => (
         <TableRow key={withdrawal.id}>
           <TableCell>{index + 1}</TableCell>
-          <TableCell>{withdrawal.wallet.user.username}</TableCell>
+          <TableCell>
+            <Button
+              onClick={() => handleUsernameClick(withdrawal.wallet.user.id)}
+              style={{ textTransform: "none", padding: 0 }}
+            >
+              {withdrawal.wallet.user.username}
+            </Button>
+          </TableCell>
           <TableCell>{withdrawal.wallet.user.phone_number}</TableCell>
           <TableCell>{withdrawal.withdrawal_amount}</TableCell>
           <TableCell>
@@ -229,11 +243,13 @@ const WithdrawalsComponent = () => {
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: 300,
+          height: "85vh",
           bgcolor: "background.paper",
           border: "2px solid #000",
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
+          overflowY: "auto", // Enable vertical scroll
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
