@@ -26,7 +26,12 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
-import Loader from "@/components/Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 
 const BattleModal = ({ isOpen, onClose, selectedChallenge }) => {
   // const handleWinnerChange = (event) => {

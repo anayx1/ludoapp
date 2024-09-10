@@ -11,7 +11,12 @@ import {
   Divider,
   Paper,
 } from "@mui/material";
-import Loader from "./Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 
 const History = () => {
   const [value, setValue] = useState(0);

@@ -11,7 +11,12 @@ import {
 import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/router";
-import Loader from "@/components/Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 
 const Register = () => {
   const router = useRouter();

@@ -24,7 +24,12 @@ import {
 } from "@mui/material";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
-import Loader from "@/components/Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 
 const CreateBattle = () => {
   const [amount, setAmount] = useState("");

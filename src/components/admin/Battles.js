@@ -28,7 +28,12 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { io } from "socket.io-client";
-import Loader from "../Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 
 const BattleModal = ({
   isOpen,

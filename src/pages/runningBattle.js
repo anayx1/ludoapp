@@ -17,7 +17,12 @@ import {
 } from "@mui/material";
 import Sidebar from "@/components/Sidebar";
 import withAuth from "@/components/withAuth";
-import Loader from "@/components/Loader";
+import dynamic from "next/dynamic";
+
+// Dynamically import the Loader component, disabling SSR
+const Loader = dynamic(() => import("@/components/Loader"), {
+  ssr: false,
+});
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const RunningBattle = () => {
