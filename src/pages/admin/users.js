@@ -101,7 +101,12 @@ const UserComponent = () => {
                   filteredUserData.map((user, index) => (
                     <TableRow key={user.id}>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{user.username}</TableCell>
+                      <TableCell
+                        onClick={() => handleViewDetails(user.id)}
+                        style={{ color: "blue", cursor: "pointer" }}
+                      >
+                        {user.username}
+                      </TableCell>
                       <TableCell>{user.phone_number}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.name || "-"}</TableCell>
