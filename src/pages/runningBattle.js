@@ -517,7 +517,124 @@ const RunningBattle = () => {
                 The other player has cancelled this battle. Contact admin for
                 further assistance.
               </Typography>
-              <Box sx={{ mt: 3 }}>
+              {battleDetails?.room.update_status && !userResult && (
+                <Box sx={{ mt: 3, textAlign: "center" }}>
+                  <Typography variant="h6" gutterBottom>
+                    <b>Submit Your Game Result</b>
+                  </Typography>
+                  <FormControl component="fieldset" sx={{ width: "100%" }}>
+                    <RadioGroup
+                      aria-label="game-outcome"
+                      name="game-outcome"
+                      value={gameOutcome}
+                      onChange={handleOutcomeChange}
+                      row
+                      sx={{ justifyContent: "center" }}
+                    >
+                      <FormControlLabel
+                        value="W"
+                        control={<Radio />}
+                        label="Won"
+                      />
+                      <FormControlLabel
+                        value="L"
+                        control={<Radio />}
+                        label="Lost"
+                      />
+                      {/* {gameOutcome != "W" && gameOutcome != "L" && ( */}
+                      <FormControlLabel
+                        value="cancel"
+                        control={<Radio />}
+                        label="Cancel"
+                      />
+                      {/* )} */}
+                    </RadioGroup>
+                  </FormControl>
+
+                  {gameOutcome === "cancel" && (
+                    <Box sx={{ mt: 2 }}>
+                      <FormControl fullWidth sx={{ mb: 2 }}>
+                        <Select
+                          value={cancellationReason}
+                          onChange={handleCancellationReasonChange}
+                          displayEmpty
+                          inputProps={{ "aria-label": "Cancel reason" }}
+                        >
+                          <MenuItem value="" disabled>
+                            Select cancellation reason
+                          </MenuItem>
+                          <MenuItem value="No room code">No room code</MenuItem>
+                          <MenuItem value="Game not Started">
+                            Game not Started
+                          </MenuItem>
+                          <MenuItem value="Not Joined">Not Joined</MenuItem>
+                          <MenuItem value="Not Playing">Not Playing</MenuItem>
+                          <MenuItem value="Dont want to play">
+                            Don't want to play
+                          </MenuItem>
+                          <MenuItem value="Opponent abusing">
+                            Opponent abusing
+                          </MenuItem>
+                          <MenuItem value="Other">Other</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleCancelSubmit}
+                        disabled={isSubmitting || !cancellationReason}
+                      >
+                        {isSubmitting ? <Loader /> : "Submit Cancellation"}
+                      </Button>
+                    </Box>
+                  )}
+
+                  {gameOutcome === "W" && (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                        id="screenshot-upload"
+                      />
+                      <label htmlFor="screenshot-upload">
+                        <Button
+                          variant="contained"
+                          component="span"
+                          fullWidth
+                          sx={{ mt: 2 }}
+                        >
+                          Choose Screenshot
+                        </Button>
+                      </label>
+                      {selectedFile && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          Selected file: {selectedFile.name}
+                        </Typography>
+                      )}
+                    </>
+                  )}
+
+                  {(gameOutcome === "W" || gameOutcome === "L") && (
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleUploadScreenshot}
+                      sx={{ mt: 2 }}
+                      disabled={
+                        isSubmitting ||
+                        !gameOutcome ||
+                        (gameOutcome === "W" && !selectedFile)
+                      }
+                    >
+                      {isSubmitting ? <Loader /> : "Submit Result"}
+                    </Button>
+                  )}
+                </Box>
+              )}
+              {/* <Box sx={{ mt: 3 }}>
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <Select
                   value={cancellationReason}
@@ -548,7 +665,7 @@ const RunningBattle = () => {
               >
                 {isSubmitting ? <Loader /> : "Submit Cancellation"}
               </Button>
-            </Box>
+            </Box> */}
             </Box>
           )}
 

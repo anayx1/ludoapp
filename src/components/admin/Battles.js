@@ -490,11 +490,11 @@ const BattlesComponent = ({ initialTab = 0 }) => {
       await axios.post(
         `https://admin.aoneludo.com/api/cancel-challenge/${id}/`
       );
-      fetchChallenges()
+      fetchChallenges();
       if (socket) {
         socket.emit("battle-cancel", id);
       }
-        } catch (error) {
+    } catch (error) {
       console.error("Error cancelling battle:", error);
     }
   };
@@ -630,7 +630,16 @@ const BattlesComponent = ({ initialTab = 0 }) => {
                           : "N/A"}
                       </TableCell>
                       <TableCell>{row.room.room_amount}</TableCell>
-                      {tabValue === 0 && <TableCell> - </TableCell>}
+                      {tabValue === 0 && (
+                        <TableCell>
+                          {" "}
+                          {row.timestamp
+                            ? dayjs(row.timestamp).format(
+                                "MM/DD/YYYY hh:mm:ss A"
+                              )
+                            : "-"}{" "}
+                        </TableCell>
+                      )}
                       {showActionColumn && (
                         <TableCell>
                           {tabValue === 0 && ( // Only show for open battles
