@@ -95,7 +95,7 @@ const RunningBattle = () => {
       });
       socketIo.on("battle-cancel", (data) => {
         if (id === data) {
-          router.push("/battles");
+          router.push(`/runningBattle?id=${id}&status=pending`);
         }
       });
     }
