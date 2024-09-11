@@ -472,12 +472,6 @@ const BattlesComponent = ({ initialTab = 0 }) => {
 
   useEffect(() => {
     setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
   }, []);
   useEffect(() => {
     // Update the tab value if it's passed in the URL
@@ -497,6 +491,9 @@ const BattlesComponent = ({ initialTab = 0 }) => {
         `https://admin.aoneludo.com/api/cancel-challenge/${id}/`
       );
       fetchChallenges()
+      if (socket) {
+        socket.emit("battle-cancel", id);
+      }
         } catch (error) {
       console.error("Error cancelling battle:", error);
     }

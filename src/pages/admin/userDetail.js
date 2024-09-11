@@ -27,6 +27,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
 import dynamic from "next/dynamic";
+import { io } from "socket.io-client";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -434,6 +435,33 @@ const UserDetail = () => {
   const router = useRouter();
   const { id } = router.query;
 
+  const [socket, setSocket] = useState(null);
+
+  const setSocketIo = () => {
+    const socketIo = io("https://socket.aoneludo.com");
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      socketIo.emit("user-joined", "admin");
+
+      socketIo.on("update-stats", () => {
+        fetchChallenges(false);
+      });
+    }
+
+    function onDisconnect() {}
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
+  };
+
+  useEffect(() => {
+    setSocketIo();
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -655,6 +683,9 @@ const UserDetail = () => {
       );
 
       if (response.status === 200 && response.data.error === false) {
+        if (socket) {
+          socket.emit("balance-update", id);
+        }
         setSnackbar({
           open: true,
           message: response.data.detail || "Operation successful",
@@ -688,6 +719,9 @@ const UserDetail = () => {
       );
 
       if (response.status === 200 && response.data.error === false) {
+        if (socket) {
+          socket.emit("balance-update", id);
+        }
         setSnackbar({
           open: true,
           message: response.data.detail || "Operation successful",
