@@ -437,6 +437,38 @@ const UserDetail = () => {
 
   const [socket, setSocket] = useState(null);
 
+  const fetchData = async () => {
+    if (!id) return;
+
+    setIsLoading(true);
+    try {
+      const [userResponse, historyResponse, battleResponse] = await Promise.all(
+        [
+          axios.get(
+            `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
+          ),
+          axios.get(`https://admin.aoneludo.com/api/user-history/${id}/`),
+          axios.get(`https://admin.aoneludo.com/api/battle-history/${id}/`),
+        ]
+      );
+
+      setUserDetails(userResponse.data.user_details);
+
+      // Merge and process wallet history
+      const mergedHistory = processWalletHistory(
+        historyResponse.data,
+        battleResponse.data,
+        historyResponse.data.penalty_history
+      );
+      setWalletHistory(mergedHistory);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Failed to fetch user details and history. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const setSocketIo = () => {
     const socketIo = io("https://socket.aoneludo.com");
     setSocket(socketIo);
@@ -463,37 +495,6 @@ const UserDetail = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-
-      setIsLoading(true);
-      try {
-        const [userResponse, historyResponse, battleResponse] =
-          await Promise.all([
-            axios.get(
-              `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
-            ),
-            axios.get(`https://admin.aoneludo.com/api/user-history/${id}/`),
-            axios.get(`https://admin.aoneludo.com/api/battle-history/${id}/`),
-          ]);
-
-        setUserDetails(userResponse.data.user_details);
-
-        // Merge and process wallet history
-        const mergedHistory = processWalletHistory(
-          historyResponse.data,
-          battleResponse.data,
-          historyResponse.data.penalty_history
-        );
-        setWalletHistory(mergedHistory);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to fetch user details and history. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, [id]);
   useEffect(() => {
@@ -685,6 +686,7 @@ const UserDetail = () => {
       if (response.status === 200 && response.data.error === false) {
         if (socket) {
           socket.emit("balance-update", id);
+          fetchData();
         }
         setSnackbar({
           open: true,
@@ -721,6 +723,7 @@ const UserDetail = () => {
       if (response.status === 200 && response.data.error === false) {
         if (socket) {
           socket.emit("balance-update", id);
+          fetchData();
         }
         setSnackbar({
           open: true,
