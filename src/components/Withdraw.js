@@ -19,6 +19,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -71,7 +72,7 @@ const Withdraw = () => {
   const [effectiveMaxWithdraw, setEffectiveMaxWithdraw] = useState(Infinity);
 
   const [userId, setUserId] = useState(null);
-  const [socket, setSocket] = useState(null);
+  const {socket} = useSocketContext();
 
   const fetchUserDetails = async () => {
     try {
@@ -131,13 +132,6 @@ const Withdraw = () => {
 
     return null; // No error
   };
-
-  const socketIo = typeof window !== "undefined" && window.socket;
-  useEffect(() => {
-    if (socketIo) {
-      setSocket(socketIo);
-    }
-  }, [socketIo]);
 
   useEffect(() => {
     fetchUserDetails();

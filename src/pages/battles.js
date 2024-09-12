@@ -25,6 +25,7 @@ import {
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
 import dynamic from "next/dynamic";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -59,11 +60,9 @@ const CreateBattle = () => {
   const [btnLoading, setBtnLoading] = useState(false);
   const router = useRouter();
 
-  const [socket, setSocket] = useState(null);
+  const {socket} = useSocketContext();
 
   const setSocketIo = (socketIo) => {
-    setSocket(socketIo);
-    function onConnect() {
       socketIo.on("battle-joined", (data) => {
         console.log("Battle joined--------", data);
         fetchBattles();
@@ -83,16 +82,13 @@ const CreateBattle = () => {
         console.log("Battle result", data);
         fetchBattles();
       });
-    }
-    socketIo.on("connect", onConnect);
   };
 
-  const socketIo = typeof window !== "undefined" && window.socket;
   useEffect(() => {
-    if (socketIo) {
-      setSocketIo(socketIo);
+    if (socket?.connected) {
+      setSocketIo(socket);
     }
-  }, [socketIo]);
+  }, [socket?.connected]);
 
   useEffect(() => {
     fetchBattles(true);

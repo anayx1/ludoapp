@@ -24,6 +24,7 @@ const Loader = dynamic(() => import("@/components/Loader"), {
   ssr: false,
 });
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const RunningBattle = () => {
   const router = useRouter();
@@ -35,12 +36,12 @@ const RunningBattle = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gameOutcome, setGameOutcome] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [socket, setSocket] = useState(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const userId = useMemo(() => getUserIdFromSessionStorage(), []);
   const [cancellationReason, setCancellationReason] = useState("");
   const [showCancellationOptions, setShowCancellationOptions] = useState(false);
 
+  const { socket } = useSocketContext();
   useEffect(() => {
     if (id) {
       fetchBattleDetails();
@@ -82,32 +83,23 @@ const RunningBattle = () => {
   };
 
   const setSocketIo = (socketIo) => {
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.on("room-id-created", (data) => {
-        if (id === data) {
-          fetchBattleDetails();
-        }
-      });
-      socketIo.on("battle-cancel", (data) => {
-        if (id === data) {
-          router.push(`/runningBattle?id=${id}&status=pending`);
-        }
-      });
-    }
-    socketIo.on("connect", onConnect);
+    socketIo.on("room-id-created", (data) => {
+      if (id === data) {
+        fetchBattleDetails();
+      }
+    });
+    socketIo.on("battle-cancel", (data) => {
+      if (id === data) {
+        router.push(`/runningBattle?id=${id}&status=pending`);
+      }
+    });
   };
 
-  const socketIo = typeof window !== "undefined" && window.socket;
   useEffect(() => {
-    if (socketIo) {
-      setSocketIo(socketIo);
+    if (socket?.connected) {
+      setSocketIo(socket);
     }
-  }, [socketIo]);
+  }, [socket?.connected]);
 
   const handleRoomIdInputChange = (event) => {
     setRoomIdInput(event.target.value);

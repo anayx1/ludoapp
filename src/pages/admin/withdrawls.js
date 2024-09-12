@@ -23,8 +23,8 @@ import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import CloseIcon from "@mui/icons-material/Close";
 import withAdminAuth from "@/components/withAdminAuth";
-import { io } from "socket.io-client";
 import { useRouter } from "next/router";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const WithdrawalsComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -38,38 +38,20 @@ const WithdrawalsComponent = () => {
   const [resetData, setResetData] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [socket, setSocket] = useState(null);
+  const {socket} = useSocketContext();
   const router = useRouter();
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
+  const setSocketIo = (socketIo) => {
       socketIo.on("withdraw-request", (data) => {
         setResetData(true);
       });
-    }
-
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if(socket?.connected){
+      setSocketIo(socket);
+    }
+  }, [socket?.connected]);
 
   const fetchWithdrawalData = async () => {
     try {

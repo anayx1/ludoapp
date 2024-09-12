@@ -20,8 +20,8 @@ import {
 import axios from "axios";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import withAdminAuth from "@/components/withAdminAuth";
-import { io } from "socket.io-client";
 import { useRouter } from "next/router";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const DepositComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -40,7 +40,7 @@ const DepositComponent = () => {
   const [reason, setReason] = useState("");
   const [modalType, setModalType] = useState("credit");
 
-  const [socket, setSocket] = useState(null);
+  const { socket } = useSocketContext();
   const router = useRouter();
 
   const handleViewDetails = (userId) => {
@@ -49,35 +49,17 @@ const DepositComponent = () => {
       query: { id: userId },
     });
   };
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
-      socketIo.on("deposit-request", (data) => {
-        fetchDepositData();
-      });
-    }
-
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
+  const setSocketIo = (socketIo) => {
+    socketIo.on("deposit-request", (data) => {
+      fetchDepositData();
+    });
   };
 
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if (socket?.connected) {
+      setSocketIo(socket);
+    }
+  }, [socket?.connected]);
 
   const fetchDepositData = useCallback(async () => {
     try {

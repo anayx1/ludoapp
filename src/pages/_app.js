@@ -5,6 +5,7 @@ import "../styles/globals.css";
 import Head from "next/head";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import SocketContextProvider from "@/context/SocketProvider";
 
 if (typeof window !== "undefined") {
   window.deferredInstallPrompt = null;
@@ -89,7 +90,9 @@ function MyApp({ Component, pageProps, whatsappNumber }) {
         <meta property="og:url" content="https://aoneludo.com/" />
       </Head>
       <main className={poppins.className}>
-        <Component {...pageProps} />
+        <SocketContextProvider>
+          <Component {...pageProps} />
+        </SocketContextProvider>
         <a href={`https://wa.me/+91${whatsapp}`}>
           <img
             src="/whatsapp_icon.svg"

@@ -5,6 +5,7 @@ import Styles from "@/styles/adminDashboard.module.css";
 import { useRouter } from "next/router";
 import { io } from "socket.io-client";
 import withAdminAuth from "@/components/withAdminAuth";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const Dashboard = () => {
   const [commissionData, setCommissionData] = useState({});
@@ -14,7 +15,7 @@ const Dashboard = () => {
   const [userBalance, setUserBalance] = useState({});
   const router = useRouter();
 
-  const [socket, setSocket] = useState(null);
+    const { socket } = useSocketContext();
 
   const fetchData = async () => {
     try {
@@ -56,37 +57,17 @@ const Dashboard = () => {
     }
   };
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
+  const setSocketIo = (socketIo) => {
       socketIo.on("update-stats", () => {
         fetchData();
       });
-    }
-
-    function onDisconnect() {
-
-    }
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
   useEffect(() => {
-    setSocketIo();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
-  }, []);
+    if (socket?.connected) {
+      setSocketIo(socket);
+    }
+  }, [socket]);
 
   useEffect(() => {
     fetchData();

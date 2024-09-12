@@ -27,7 +27,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
 import dynamic from "next/dynamic";
-import { io } from "socket.io-client";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -435,7 +435,7 @@ const UserDetail = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const [socket, setSocket] = useState(null);
+    const { socket } = useSocketContext();
 
   const fetchData = async () => {
     if (!id) return;
@@ -469,30 +469,19 @@ const UserDetail = () => {
     }
   };
   
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
+  const setSocketIo = (socketIo) => {
 
       socketIo.on("update-stats", () => {
         fetchChallenges(false);
       });
-    }
 
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
   };
 
   useEffect(() => {
-    setSocketIo();
-  }, []);
+    if(socket?.connected){
+      setSocketIo(socket);
+    }
+  }, [socket?.connected]);
 
   useEffect(() => {
     fetchData();

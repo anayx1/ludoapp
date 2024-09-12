@@ -13,6 +13,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import dynamic from "next/dynamic";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -35,18 +36,8 @@ const AddCash = () => {
   const router = useRouter();
 
   const [userId, setUserId] = useState(null);
-  const [socket, setSocket] = useState(null);
-
-  const setSocketIo = (socketIo) => {
-    setSocket(socketIo);
-  };
-
-  const socketIo = typeof window !== "undefined" && window.socket;
-  useEffect(() => {
-    if (socketIo) {
-      setSocketIo(socketIo);
-    }
-  }, [socketIo]);
+  
+  const {socket} = useSocketContext();
 
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData"));

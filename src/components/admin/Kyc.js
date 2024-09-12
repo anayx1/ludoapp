@@ -17,8 +17,8 @@ import {
   TextField,
 } from "@mui/material";
 import axios from "axios";
-import { io } from "socket.io-client";
 import { Router, useRouter } from "next/router";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const KYCComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -29,7 +29,7 @@ const KYCComponent = () => {
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
-  const [socket, setSocket] = useState(null);
+  const {socket} = useSocketContext();
   const router = useRouter(); // Add this line
 
   const handleNameClick = (userId) => {
@@ -58,36 +58,20 @@ const KYCComponent = () => {
     }
   };
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
-
-      socketIo.on("update-stats", () => {
-        fetchKycData();
-      });
-    }
-
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
+  const setSocketIo = (socketIo) => {
+    socketIo.on("update-stats", () => {
+      fetchKycData();
+    });
   };
 
   useEffect(() => {
-    setSocketIo();
+    if(socket?.connected){
+      setSocketIo(socket);
+    }
+  }, [socket?.connected])
+
+  useEffect(() => {
     fetchKycData();
-    return () => {
-      if (socket) {
-        socket.off("connect", onConnect);
-        socket.off("disconnect", onDisconnect);
-      }
-    };
   }, []);
 
   const handleTabChange = (event, newValue) => {

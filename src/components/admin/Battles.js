@@ -27,8 +27,8 @@ import {
   Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { io } from "socket.io-client";
 import dynamic from "next/dynamic";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -431,7 +431,7 @@ const BattlesComponent = ({ initialTab = 0 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [selectedWinner, setSelectedWinner] = useState("");
-  const [socket, setSocket] = useState(null);
+  const { socket } = useSocketContext();
   const showActionColumn = tabValue === 3 || tabValue === 1 || tabValue === 0; // Show for Pending, Running, and Open tabs
   const fetchChallenges = async (loading = true) => {
     if (loading) {
@@ -449,30 +449,17 @@ const BattlesComponent = ({ initialTab = 0 }) => {
     }
   };
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
-
-      socketIo.on("update-stats", () => {
-        fetchChallenges(false);
-      });
-    }
-
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
+  const setSocketIo = (socketIo) => {
+    socketIo.on("update-stats", () => {
+      fetchChallenges(false);
+    });
   };
 
   useEffect(() => {
-    setSocketIo();
-  }, []);
+    if (socket?.connected) {
+      setSocketIo(socket);
+    }
+  }, [socket?.connected]);
   useEffect(() => {
     // Update the tab value if it's passed in the URL
     const { tab } = router.query;

@@ -21,124 +21,14 @@ import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
 import CachedIcon from "@mui/icons-material/Cached";
 import HomeIcon from "@mui/icons-material/Home";
 import InstallPWA from "./PWA";
-import { io } from "socket.io-client";
+import { useSocketContext } from "@/context/SocketProvider";
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const [userData, setUserData] = useState(null);
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [userId, setUserId] = useState(null);
-  const [token, setToken] = useState(null);
+  const { userData, walletBalance, setWalletBalance } = useSocketContext();
 
-  const [socket, setSocket] = useState(null);
 
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    if(typeof window !== undefined){
-      window.socket = socketIo;
-    }
-
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", userId);
-
-      socketIo.on("balance-update", async (data) => {
-        console.log("data", data, userId);
-        if (data == userId) {
-          const userData = await fetchUserDetails(userId, token);
-          if (userData) {
-            setWalletBalance(userData.user_details.wallet.balance || 0);
-          }
-        }
-      });
-    }
-
-    function onDisconnect() {
-      socketIo.emit("user-leave", userId);
-    }
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
-  };
-
-  useEffect(() => {
-    if (userId) {
-      setSocketIo();
-    }
-  }, [userId]);
-
-  const fetchUserDetails = async (userId, token) => {
-    try {
-      const response = await fetch(
-        `https://admin.aoneludo.com/auth/get-user-details/${userId}/`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user details");
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      return null;
-    }
-  };
-
-  const getDecodedCookieData = () => {
-    const cookieData = Cookies.get("userData");
-    return cookieData ? JSON.parse(decodeURIComponent(cookieData)) : null;
-  };
-
-  useEffect(() => {
-    const loadAndUpdateUserData = async () => {
-      let storedData = sessionStorage.getItem("userData");
-      if (!storedData) {
-        const cookieData = getDecodedCookieData();
-        if (cookieData) {
-          storedData = JSON.stringify(cookieData);
-        }
-      }
-
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        setUserData(parsedData);
-        setWalletBalance(parsedData.user_details.wallet.balance || 0);
-        setUserId(parsedData.user_details.id);
-        setToken(parsedData.token);
-        // Fetch latest user details
-        const updatedData = await fetchUserDetails(
-          parsedData.user_details.id,
-          parsedData.token
-        );
-        if (updatedData) {
-          const newUserData = {
-            ...parsedData,
-            user_details: updatedData.user_details,
-          };
-          const newUserDataString = JSON.stringify(newUserData);
-          sessionStorage.setItem("userData", newUserDataString);
-          Cookies.set("userData", newUserDataString, { expires: 7 }); // Cookie expires in 7 days
-          setUserData(newUserData);
-          setWalletBalance(newUserData.user_details.wallet.balance || 0);
-        }
-      }
-    };
-
-    loadAndUpdateUserData();
-  }, []);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
