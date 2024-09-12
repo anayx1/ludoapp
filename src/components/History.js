@@ -81,7 +81,7 @@ const History = () => {
 
     return (
       <List>
-        {combinedHistory.map((item, index) => (
+        {combinedHistory.reverse().map((item, index) => (
           <React.Fragment key={index}>
             <ListItem>
               <ListItemText
@@ -126,7 +126,7 @@ const History = () => {
 
   const renderWithdrawalsHistory = () => (
     <List>
-      {history.withdrawal_history
+      {history.withdrawal_history.reverse()
         .sort(
           (a, b) => new Date(b.withdrawal_date) - new Date(a.withdrawal_date)
         )
@@ -178,7 +178,7 @@ const History = () => {
 
   const renderChallengeHistory = () => (
     <List>
-      {history.challenge_history
+      {history.challenge_history.reverse()
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .map((item, index) => (
           <React.Fragment key={index}>

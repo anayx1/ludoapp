@@ -21,6 +21,7 @@ import {
   FormControlLabel,
   Radio,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import Router, { useRouter } from "next/router";
@@ -142,9 +143,9 @@ const CreateBattle = () => {
           }
         );
 
-        setOpenBattles(data.open_challenges || []);
-        setRunningBattles(sortedRunningBattles);
-        setPendingBattles(sortedPendingBattles);
+        setOpenBattles(data.open_challenges.reverse() || []);
+        setRunningBattles(sortedRunningBattles.reverse());
+        setPendingBattles(sortedPendingBattles.reverse());
         setStartedBattles(data.started_challenges || []);
       }
     } catch (error) {
@@ -940,6 +941,32 @@ const CreateBattle = () => {
         <Typography variant="h5" gutterBottom align="center">
           Create a battle
         </Typography>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "90%",
+              backgroundColor: "#FDEDED",
+              color: "#5F2120",
+              height: "auto",
+              textAlign: "center",
+              borderRadius: "20px",
+              margin: "10px",
+              padding: "10px",
+            }}
+          >
+            बैटल स्वचालित रूप से बंद हो जाएगी यदि कोई चार मिनट तक नहीं जुड़ता
+            है, आपका पैसा वापस कर दिया जाएगा।
+          </div>
+        </div>
         <Box>
           <Box
             component="form"
@@ -977,7 +1004,7 @@ const CreateBattle = () => {
               }}
             >
               {btnLoading ? (
-                <Loader size={24} style={{ color: "#fff" }} />
+                <CircularProgress size={24} style={{ color: "#fff" }} />
               ) : (
                 "SET"
               )}
@@ -1048,7 +1075,7 @@ const CreateBattle = () => {
               <FlashOnIcon sx={{ mr: 1 }} />
               <b>Pending Results </b>
             </Typography>
-            {pendingBattles.map((battle) => (
+            {pendingBattles.reverse().map((battle) => (
               <PendingBattleCard key={battle.challenge_id} battle={battle} />
             ))}
           </Paper>

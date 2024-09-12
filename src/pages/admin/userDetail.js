@@ -27,7 +27,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
 import dynamic from "next/dynamic";
-import { useSocketContext } from "@/context/SocketProvider";
+import { io } from "socket.io-client";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -430,60 +430,71 @@ const UserDetail = () => {
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    severity: "success",
+    severity: "succezss",
   });
   const router = useRouter();
   const { id } = router.query;
 
-    const { socket } = useSocketContext();
+  const [socket, setSocket] = useState(null);
 
-  const fetchData = async () => {
-    if (!id) return;
-
-    setIsLoading(true);
-    try {
-      const [userResponse, historyResponse, battleResponse] = await Promise.all(
-        [
-          axios.get(
-            `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
-          ),
-          axios.get(`https://admin.aoneludo.com/api/user-history/${id}/`),
-          axios.get(`https://admin.aoneludo.com/api/battle-history/${id}/`),
-        ]
-      );
-
-      setUserDetails(userResponse.data.user_details);
-
-      // Merge and process wallet history
-      const mergedHistory = processWalletHistory(
-        historyResponse.data,
-        battleResponse.data,
-        historyResponse.data.penalty_history
-      );
-      setWalletHistory(mergedHistory);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to fetch user details and history. Please try again.");
-    } finally {
-      setIsLoading(false);
+  const setSocketIo = () => {
+    const socketIo = io("https://socket.aoneludo.com");
+    setSocket(socketIo);
+    if (socketIo.connected) {
+      onConnect();
     }
-  };
-  
-  const setSocketIo = (socketIo) => {
+
+    function onConnect() {
+      socketIo.emit("user-joined", "admin");
 
       socketIo.on("update-stats", () => {
         fetchChallenges(false);
       });
+    }
 
+    function onDisconnect() {}
+
+    socketIo.on("connect", onConnect);
+    socketIo.on("disconnect", onDisconnect);
   };
 
   useEffect(() => {
-    if(socket?.connected){
-      setSocketIo(socket);
-    }
-  }, [socket?.connected]);
+    setSocketIo();
+  }, []);
 
   useEffect(() => {
+    const fetchData = async () => {
+      if (!id) return;
+
+      setIsLoading(true);
+      try {
+        const [userResponse, historyResponse, battleResponse] =
+          await Promise.all([
+            axios.get(
+              `https://admin.aoneludo.com/auth/get-detailed-user-details/${id}/`
+            ),
+            axios.get(`https://admin.aoneludo.com/api/user-history/${id}/`),
+            axios.get(`https://admin.aoneludo.com/api/battle-history/${id}/`),
+          ]);
+
+        setUserDetails(userResponse.data.user_details);
+
+        // Merge and process wallet history
+        const mergedHistory = processWalletHistory(
+          historyResponse.data,
+          battleResponse.data,
+          historyResponse.data.penalty_history,
+          historyResponse.data.withdrawal_history
+        );
+        setWalletHistory(mergedHistory);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch user details and history. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchData();
   }, [id]);
   useEffect(() => {
@@ -505,7 +516,12 @@ const UserDetail = () => {
     fetchChallengeData();
   }, [selectedChallenge]);
 
-  const processWalletHistory = (walletData, battleData, penaltyData) => {
+  const processWalletHistory = (
+    walletData,
+    battleData,
+    penaltyData,
+    withdrawalData
+  ) => {
     let history = [...walletData.wallet_history];
 
     // Add lost battles to history
@@ -516,6 +532,7 @@ const UserDetail = () => {
         status: "Successful",
         tag: "Lost",
         challenge_id: lost.challenge_id,
+        closing: lost.closing_balance,
       });
     });
 
@@ -528,6 +545,19 @@ const UserDetail = () => {
         tag: "Penalty",
         challenge_id: null,
         reason: penalty.reason,
+        closing: penalty.closing_balance,
+      });
+    });
+
+    // Add withdrawal history to wallet history
+    withdrawalData.forEach((withdrawal) => {
+      history.push({
+        deposit_amount: withdrawal.withdrawal_amount,
+        deposit_date: withdrawal.withdrawal_date,
+        status: withdrawal.status,
+        tag: "Withdrawal",
+        challenge_id: null,
+        closing: withdrawal?.closing_balance, // We don't have closing balance for withdrawals
       });
     });
 
@@ -560,7 +590,8 @@ const UserDetail = () => {
         amount: amount,
         win: item.tag === "Winning" ? amount : 0,
         operator: operator,
-        closing: Math.abs(balance).toFixed(2), // Use absolute value to remove negative sign
+        closing:
+          item.closing !== null ? item.closing : Math.abs(balance).toFixed(2),
       };
     });
   };
@@ -675,7 +706,6 @@ const UserDetail = () => {
       if (response.status === 200 && response.data.error === false) {
         if (socket) {
           socket.emit("balance-update", id);
-          fetchData();
         }
         setSnackbar({
           open: true,
@@ -712,7 +742,6 @@ const UserDetail = () => {
       if (response.status === 200 && response.data.error === false) {
         if (socket) {
           socket.emit("balance-update", id);
-          fetchData();
         }
         setSnackbar({
           open: true,
