@@ -61,28 +61,28 @@ const CreateBattle = () => {
   const [btnLoading, setBtnLoading] = useState(false);
   const router = useRouter();
 
-  const {socket} = useSocketContext();
+  const { socket } = useSocketContext();
 
   const setSocketIo = (socketIo) => {
-      socketIo.on("battle-joined", (data) => {
-        console.log("Battle joined--------", data);
-        fetchBattles();
-      });
+    socketIo.on("battle-joined", (data) => {
+      console.log("Battle joined--------", data);
+      fetchBattles();
+    });
 
-      socketIo.on("battle-created", (data) => {
-        console.log("Battle created", data);
-        fetchBattles();
-      });
+    socketIo.on("battle-created", (data) => {
+      console.log("Battle created", data);
+      fetchBattles();
+    });
 
-      socketIo.on("battle-cancel", (data) => {
-        console.log("Battle cancel", data);
-        fetchBattles();
-      });
+    socketIo.on("battle-cancel", (data) => {
+      console.log("Battle cancel", data);
+      fetchBattles();
+    });
 
-      socketIo.on("battle-result", (data) => {
-        console.log("Battle result", data);
-        fetchBattles();
-      });
+    socketIo.on("battle-result", (data) => {
+      console.log("Battle result", data);
+      fetchBattles();
+    });
   };
 
   useEffect(() => {
@@ -288,6 +288,9 @@ const CreateBattle = () => {
       setBtnLoading(false);
       setAmount(""); // Clear the input field after successful creation
       fetchBattles(); // Refresh the list of battles
+      setTimeout(() => {
+        window.location.reload();
+      }, 4 * 60 * 1000); // 4 minutes in milliseconds
     } catch (error) {
       console.error("Error creating room:", error);
       setErrorMessage("Failed to create room. Please try again.");
@@ -941,32 +944,7 @@ const CreateBattle = () => {
         <Typography variant="h5" gutterBottom align="center">
           Create a battle
         </Typography>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              width: "90%",
-              backgroundColor: "#FDEDED",
-              color: "#5F2120",
-              height: "auto",
-              textAlign: "center",
-              borderRadius: "20px",
-              margin: "10px",
-              padding: "10px",
-            }}
-          >
-            बैटल स्वचालित रूप से बंद हो जाएगी यदि कोई चार मिनट तक नहीं जुड़ता
-            है, आपका पैसा वापस कर दिया जाएगा।
-          </div>
-        </div>
+
         <Box>
           <Box
             component="form"

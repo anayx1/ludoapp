@@ -525,14 +525,14 @@ const UserDetail = () => {
     let history = [...walletData.wallet_history];
 
     // Add lost battles to history
-    battleData.lost_history.forEach((lost) => {
+    battleData.lost_history?.forEach((lost) => {
       history.push({
         deposit_amount: lost.lost_amount,
         deposit_date: lost.timestamp,
         status: "Successful",
         tag: "Lost",
         challenge_id: lost.challenge_id,
-        closing: lost.closing_balance,
+        closing_balance: lost.closing_balance,
       });
     });
 
@@ -545,7 +545,7 @@ const UserDetail = () => {
         tag: "Penalty",
         challenge_id: null,
         reason: penalty.reason,
-        closing: penalty.closing_balance,
+        closing_balance: penalty.closing_balance,
       });
     });
 
@@ -557,15 +557,15 @@ const UserDetail = () => {
         status: withdrawal.status,
         tag: "Withdrawal",
         challenge_id: null,
-        closing: withdrawal?.closing_balance, // We don't have closing balance for withdrawals
+        closing_balance: parseFloat(withdrawal.closing_balance),
       });
     });
 
     // Sort history by date
     history.sort((a, b) => new Date(b.deposit_date) - new Date(a.deposit_date));
 
-    // Calculate running balance
-    let balance = 0;
+    // Calculate running balance if closing_balance is not available
+    let balance = history[0]?.closing_balance || 0;
     return history.map((item) => {
       const operator = [
         "Admin Deposit",
@@ -577,11 +577,16 @@ const UserDetail = () => {
         : "-";
       const amount = parseFloat(item.deposit_amount);
 
-      // Update balance based on operator
-      if (operator === "+") {
-        balance += amount;
+      // Update balance based on operator if closing_balance is not available
+      if (item.closing_balance === undefined || item.closing_balance === null) {
+        if (operator === "+") {
+          balance += amount;
+        } else {
+          balance -= amount;
+        }
+        item.closing_balance = balance;
       } else {
-        balance -= amount;
+        balance = item.closing_balance;
       }
 
       return {
@@ -590,8 +595,7 @@ const UserDetail = () => {
         amount: amount,
         win: item.tag === "Winning" ? amount : 0,
         operator: operator,
-        closing:
-          item.closing !== null ? item.closing : Math.abs(balance).toFixed(2),
+        closing: item.closing_balance.toFixed(2),
       };
     });
   };
@@ -826,7 +830,7 @@ const UserDetail = () => {
                 variant="outlined"
                 fullWidth
                 size="small"
-                value={userDetails.referrer_details || "-"}
+                value={userDetails.referrer_details.referral_code || "-"}
                 InputProps={{
                   readOnly: true,
                 }}
