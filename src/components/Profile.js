@@ -33,7 +33,6 @@ const Profile = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("userData");
     Cookies.remove("userData");
-    // setWalletBalance(0);
     window.location.href = "/login";
   };
 
@@ -53,7 +52,7 @@ const Profile = () => {
   const handleUpdateUsername = async () => {
     try {
       const response = await fetch(
-        `https://admin.aoneludo.com/auth/update-username/${userData.user_details.id}/`, 
+        `https://admin.aoneludo.com/auth/update-username/${userData.user_details.id}/`,
         {
           method: "PUT",
           headers: {
@@ -93,17 +92,44 @@ const Profile = () => {
         Profile
       </Typography>
 
-      {!user_details.kyc && (
+      {!user_details.kyc &&
+        user_details.kyc_status !== "P" &&
+        user_details.kyc_status !== "D" && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 2 }}
+            action={
+              <Button color="inherit" size="small" onClick={handleKycRedirect}>
+                Complete
+              </Button>
+            }
+          >
+            Complete Your KYC !
+          </Alert>
+        )}
+      {user_details.kyc_status === "P" && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          You have already submitted your KYC. We are currently awaiting admin
+          approval. Please be patient.<br></br>
+          <br></br> आपने अपना KYC पहले ही सबमिट कर दिया है। अभी प्रशासक की
+          मंजूरी का इंतजार हो रहा है। कृपया प्रतीक्षा करें।
+        </Alert>
+      )}
+      {user_details.kyc_status === "D" && (
         <Alert
-          severity="warning"
+          severity="alert"
           sx={{ mb: 2 }}
+          style={{ background: "#cb3232", color: "white" }}
+
           action={
             <Button color="inherit" size="small" onClick={handleKycRedirect}>
               Complete
             </Button>
           }
         >
-          Complete Your KYC !
+          Your KYC has been declined. Please upload your KYC document again,
+          ensuring that the name you enter matches the one on the document and
+          that the document photo is clear.!
         </Alert>
       )}
 

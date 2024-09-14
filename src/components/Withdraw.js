@@ -64,6 +64,7 @@ const Withdraw = () => {
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [isKycCompleted, setIsKycCompleted] = useState(true);
+  const [isKycPending, setIsKycPending] = useState(true);
   const [minWithdraw, setMinWithdraw] = useState(0);
   const [maxWithdraw, setMaxWithdraw] = useState(Infinity);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -72,7 +73,7 @@ const Withdraw = () => {
   const [effectiveMaxWithdraw, setEffectiveMaxWithdraw] = useState(Infinity);
 
   const [userId, setUserId] = useState(null);
-  const {socket} = useSocketContext();
+  const { socket } = useSocketContext();
 
   const fetchUserDetails = async () => {
     try {
@@ -81,6 +82,8 @@ const Withdraw = () => {
       if (sessionUserData) {
         setUserId(sessionUserData.user_details.id);
         setIsKycCompleted(sessionUserData.user_details.kyc);
+        setIsKycPending(sessionUserData.user_details.kyc_status);
+
         setWalletId(sessionUserData.user_details.wallet?.wallet_id);
         setWithdrawableBalance(
           parseFloat(
@@ -257,7 +260,7 @@ const Withdraw = () => {
     router.push("/kyc");
   };
 
-  if (!isKycCompleted) {
+  if (!isKycCompleted && isKycPending !== "P" && isKycPending !== "D") {
     return (
       <Container>
         <Alert
@@ -279,7 +282,43 @@ const Withdraw = () => {
       </Container>
     );
   }
-
+  if (isKycPending === "P") {
+    return (
+      <Container>
+        <Alert severity="error">
+          You have already submitted your KYC. We are currently awaiting admin
+          approval. Please be patient.<br></br>
+          <br></br> आपने अपना KYC पहले ही सबमिट कर दिया है। अभी प्रशासक की
+          मंजूरी का इंतजार हो रहा है। कृपया प्रतीक्षा करें।
+        </Alert>
+      </Container>
+    );
+  }
+  if (isKycPending === "D") {
+    return (
+      <Container>
+        <Alert
+        sx={{justifyContent:"center",alignItems:"center"}}
+          severity="error"
+          action={
+            <Button
+              color="inherit"
+              size="medium"
+              variant="outlined"
+              onClick={handleKycRedirect}
+              style={{ background: "#cb3232", color: "white" }}
+            >
+              Complete KYC
+            </Button>
+          }
+        >
+          Your KYC has been declined. Please upload your KYC document again,
+          ensuring that the name you enter matches the one on the document and
+          that the document photo is clear.
+        </Alert>
+      </Container>
+    );
+  }
   return (
     <Container>
       <AppBar position="static" sx={{ bgcolor: "default" }}>

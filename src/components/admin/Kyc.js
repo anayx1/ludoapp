@@ -19,6 +19,7 @@ import {
 import axios from "axios";
 import { Router, useRouter } from "next/router";
 import { useSocketContext } from "@/context/SocketProvider";
+import dayjs from "dayjs";
 
 const KYCComponent = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -29,7 +30,7 @@ const KYCComponent = () => {
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
-  const {socket} = useSocketContext();
+  const { socket } = useSocketContext();
   const router = useRouter(); // Add this line
 
   const handleNameClick = (userId) => {
@@ -65,10 +66,10 @@ const KYCComponent = () => {
   };
 
   useEffect(() => {
-    if(socket?.connected){
+    if (socket?.connected) {
       setSocketIo(socket);
     }
-  }, [socket?.connected])
+  }, [socket?.connected]);
 
   useEffect(() => {
     fetchKycData();
@@ -202,17 +203,20 @@ const KYCComponent = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>Username</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Name(KYC)</TableCell>
                 <TableCell>Document Number</TableCell>
                 <TableCell>Front Side</TableCell>
                 <TableCell>Back Side</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>Created at</TableCell>
+                {tabValue === 0 && <TableCell>Action</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
               {getTabData.length > 0 ? (
-                getTabData.map((row) => (
+                getTabData.reverse().map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>
                       <Button
@@ -220,41 +224,52 @@ const KYCComponent = () => {
                         onClick={() => handleNameClick(row.user)}
                         style={{ textTransform: "none" }}
                       >
-                        {row.full_name}
+                        {row.username}
                       </Button>
-                    </TableCell>{" "}
+                    </TableCell>
+                    <TableCell>{row.phone_number}</TableCell>
+                    <TableCell>{row.full_name}</TableCell>{" "}
                     <TableCell>{row.document_number}</TableCell>
                     <TableCell>{renderImageButton(row.front_side)}</TableCell>
                     <TableCell>{renderImageButton(row.back_side)}</TableCell>
                     <TableCell>{getStatusChip(row.status)}</TableCell>
+                    {console.log(row, "fsdfsdfsdf")}
                     <TableCell>
-                      {row.status === "P" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleApprove(row)}
-                            sx={{ mr: 1 }}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => handleDecline(row)}
-                          >
-                            Decline
-                          </Button>
-                        </div>
-                      )}
+                      {" "}
+                      {row.created_on
+                        ? dayjs(row.created_on).format("MM/DD/YYYY hh:mm:ss A")
+                        : "-"}{" "}
                     </TableCell>
+                    {tabValue === 0 && (
+                      <TableCell>
+                        {row.status === "P" && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleApprove(row)}
+                              sx={{ mr: 1 }}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => handleDecline(row)}
+                            >
+                              Decline
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : (
