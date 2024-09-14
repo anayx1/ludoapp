@@ -146,7 +146,7 @@ const KycForm = () => {
           marginTop: "20px",
         }}
       >
-        {userKycStatus !== "P" && (
+        {userKycStatus !== "P" &&  (
           <Paper elevation={3} sx={{ p: 3, width: "80%", mx: "auto" }}>
             <Typography variant="h5" component="h2" gutterBottom>
               Complete KYC
@@ -228,6 +228,7 @@ const KycForm = () => {
           </Paper>
         )}{" "}
         :
+        {userKycStatus ==="P" &&
         <Paper elevation={3} sx={{ p: 3, width: "80%", mx: "auto" }}>
           <Typography textAlign="center">
             You have already submitted your KYC. We are currently awaiting admin
@@ -236,6 +237,7 @@ const KycForm = () => {
             मंजूरी का इंतजार हो रहा है। कृपया प्रतीक्षा करें।
           </Typography>
         </Paper>
+        }
       </div>
       <Snackbar
         open={snackbar.open}
