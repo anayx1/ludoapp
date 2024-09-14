@@ -830,7 +830,7 @@ const UserDetail = () => {
                 variant="outlined"
                 fullWidth
                 size="small"
-                value={userDetails.referrer_details.referral_code || "-"}
+                value={userDetails.referrer_details?.referral_code || "-"}
                 InputProps={{
                   readOnly: true,
                 }}
