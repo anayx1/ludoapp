@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const LoginFormAdmin = () => {
   const router = useRouter();
@@ -21,6 +22,7 @@ const LoginFormAdmin = () => {
     password: "",
   });
 
+  const {loadAndUpdateUserData} = useSocketContext();
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -60,16 +62,17 @@ const LoginFormAdmin = () => {
           console.log("Login successful");
 
           // Store response in cookies
+
           const userData = JSON.stringify(response.data);
           Cookies.set("userData", userData, { expires: 7 }); // Expires in 7 days
-
+          
           // Log cookie data
           const cookieData = Cookies.get("userData");
           const decodedCookieData = cookieData
             ? JSON.parse(decodeURIComponent(cookieData))
             : null;
           console.log("Stored and decoded cookie data:", decodedCookieData);
-
+          loadAndUpdateUserData();
           // Redirect to admin dashboard
           router.push("/admin/dashboard");
         } else {

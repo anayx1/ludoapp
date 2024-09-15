@@ -14,18 +14,18 @@ import { useRouter } from "next/router";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import Cookies from "js-cookie";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const Profile = () => {
-  const [userData, setUserData] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const router = useRouter();
+  const {userData} = useSocketContext();
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("userData");
     if (storedData) {
       const parsedData = JSON.parse(storedData);
-      setUserData(parsedData);
       setNewUsername(parsedData.user_details.username);
     }
   }, []);

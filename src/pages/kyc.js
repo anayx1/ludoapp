@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import dynamic from "next/dynamic";
 import Router from "next/router";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -24,20 +25,19 @@ const KycForm = () => {
     front_side: null,
     back_side: null,
   });
-  const [userId, setUserId] = useState(null);
+
   const [userKycStatus, setUserKycStatus] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [frontFileName, setFrontFileName] = useState("");
   const [backFileName, setBackFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { socket, userId, userData } = useSocketContext();
 
   useEffect(() => {
-    const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (userData && userData.user_details) {
-      setUserId(userData.user_details.id);
       setUserKycStatus(userData.user_details.kyc_status);
     }
-  }, []);
+  }, [userData]);
 
   const handleChange = (event) => {
     setFormData({
@@ -107,7 +107,9 @@ const KycForm = () => {
         }
       );
       setSnackbar({ open: true, message: "KYC submitted successfully!" });
-
+      if (socket) {
+        socket.emit("kyc-request", userId);
+      }
       // Reset form and file names after successful submission
       setFormData({
         full_name: "",

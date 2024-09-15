@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import { useSocketContext } from "@/context/SocketProvider";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -24,6 +25,7 @@ const LoginForm = () => {
   const [otpMessage, setOtpMessage] = useState("");
   const [orderId, setOrderId] = useState("");
   const [verified, setVerified] = useState(false);
+  const {loadAndUpdateUserData} = useSocketContext();
 
   const handlePhoneChange = (e) => {
     setPhoneNumber(e.target.value.replace(/^(\+91|0)/, "").slice(0, 10));
@@ -144,7 +146,7 @@ const LoginForm = () => {
               ? JSON.parse(decodeURIComponent(cookieData))
               : null;
             console.log("Stored and decoded cookie data:", decodedCookieData);
-
+            loadAndUpdateUserData();
             // Redirect to home page or dashboard
             router.push("/");
           } else {

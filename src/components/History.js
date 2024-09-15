@@ -12,6 +12,7 @@ import {
   Paper,
 } from "@mui/material";
 import dynamic from "next/dynamic";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -22,34 +23,26 @@ const History = () => {
   const [value, setValue] = useState(0);
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null);
+  const {userId, walletBalance} = useSocketContext();
 
-  useEffect(() => {
-    const userDataString = sessionStorage.getItem("userData");
-    if (userDataString) {
-      const userData = JSON.parse(userDataString);
-      setUserId(userData.user_details.id);
+  const fetchHistory = async () => {
+    if (!userId) return;
+
+    try {
+      const response = await axios.get(
+        `https://admin.aoneludo.com/api/user-history/${userId}/`
+      );
+      setHistory(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      if (!userId) return;
-
-      try {
-        const response = await axios.get(
-          `https://admin.aoneludo.com/api/user-history/${userId}/`
-        );
-        setHistory(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching history:", error);
-        setLoading(false);
-      }
-    };
-
     fetchHistory();
-  }, [userId]);
+  }, [userId, walletBalance]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);

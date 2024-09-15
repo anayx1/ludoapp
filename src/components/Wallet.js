@@ -1,19 +1,12 @@
+import React from "react";
+import { useSocketContext } from "@/context/SocketProvider";
 import { Button } from "@mui/material";
 import Router from "next/router";
-import React, { useState, useEffect } from "react";
 
 const Wallet = () => {
-  const [userData, setUserData] = useState(null);
+  const {userData} = useSocketContext();
 
-  useEffect(() => {
-    const storedData = sessionStorage.getItem("userData");
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setUserData(parsedData);
-    }
-  }, []);
-
-  const user_details = userData?.user_details;
+  const user_details = userData?.user_details || {};
   const token = userData?.token;
 
   const addCash = () => {
@@ -79,8 +72,8 @@ const Wallet = () => {
               <b>
                 {" "}
                 ₹{" "}
-                {user_details?.wallet?.balance -
-                  user_details?.wallet?.withdrawable_balance}
+                {(user_details?.wallet?.balance -
+                  user_details?.wallet?.withdrawable_balance) || 0}
               </b>
             </div>
             <div style={{ width: "100%" }}>
@@ -127,7 +120,7 @@ const Wallet = () => {
               </span>
             </div>
             <div style={{ fontSize: "20px" }}>
-              <b> ₹ {user_details?.wallet?.withdrawable_balance}</b>
+              <b> ₹ {user_details?.wallet?.withdrawable_balance || 0}</b>
             </div>
             <div style={{ width: "100%" }}>
               <Button

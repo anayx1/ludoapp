@@ -200,34 +200,7 @@ export default function TemporaryDrawer() {
       </List>
     </Box>
   );
-  const updateUserData = async () => {
-    try {
-      const storedUserData = JSON.parse(sessionStorage.getItem("userData"));
-      const userId = storedUserData?.user_details?.id;
-      if (!userId) {
-        console.error("User ID not found in session storage");
-        return;
-      }
-      const response = await axios.get(
-        `https://admin.aoneludo.com/auth/get-user-details/${userId}/`
-      );
 
-      if (response.data && !response.data.error) {
-        sessionStorage.setItem("userData", JSON.stringify(response.data));
-        Cookies.set("userData", JSON.stringify(response.data), { expires: 7 });
-        console.log("User data updated successfully");
-      }
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-    }
-  };
-  useEffect(() => {
-    updateUserData();
-
-    const intervalId = setInterval(updateUserData, 5 * 60 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
   return (
     <>
       <div

@@ -90,6 +90,27 @@ export const SocketContextProvider = ({ children }) => {
             loadAndUpdateUserData();
           }
         });
+
+        socketIo.on("user-block", async (data) => {
+          if (data == userId) {
+            sessionStorage.removeItem("userData");
+            Cookies.remove("userData");
+            setWalletBalance(0);
+            window.location.href = "/login";
+          }
+        });
+       
+        socketIo.on("kyc-approve", async (data) => {
+          if (data == userId) {
+            loadAndUpdateUserData();
+          }
+        });
+        
+        socketIo.on("kyc-rejected", async (data) => {
+          if (data == userId) {
+            loadAndUpdateUserData();
+          }
+        });
       });
     }
     return () => {
@@ -100,6 +121,8 @@ export const SocketContextProvider = ({ children }) => {
   const config = {
     socket,
     userData,
+    setUserData,
+    setUserId,
     userId,
     loadAndUpdateUserData,
     walletBalance,
@@ -112,9 +135,26 @@ export const SocketContextProvider = ({ children }) => {
 };
 
 export const useSocketContext = () => {
-  const { socket, userId, userData, loadAndUpdateUserData, walletBalance, setWalletBalance } =
-    useContext(SocketContext);
-  return { socket, userId, userData, loadAndUpdateUserData, walletBalance, setWalletBalance };
+  const {
+    socket,
+    userId,
+    userData,
+    loadAndUpdateUserData,
+    walletBalance,
+    setUserData,
+    setUserId,
+    setWalletBalance,
+  } = useContext(SocketContext);
+  return {
+    socket,
+    userId,
+    userData,
+    loadAndUpdateUserData,
+    walletBalance,
+    setUserData,
+    setUserId,
+    setWalletBalance,
+  };
 };
 
 export default SocketContextProvider;

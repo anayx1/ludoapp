@@ -60,7 +60,7 @@ const KYCComponent = () => {
   };
 
   const setSocketIo = (socketIo) => {
-    socketIo.on("update-stats", () => {
+    socketIo.on("kyc-request", () => {
       fetchKycData();
     });
   };
@@ -108,6 +108,9 @@ const KYCComponent = () => {
       );
       if (!response.data.error) {
         setSnackbar({ open: true, message: "KYC approved successfully" });
+        if(socket){
+          socket.emit("kyc-approve", kycItem.user);
+        }
         fetchKycData();
       } else {
         console.error("Error approving KYC:", response.data.detail);
@@ -126,6 +129,9 @@ const KYCComponent = () => {
       );
       if (!response.data.error) {
         setSnackbar({ open: true, message: "KYC declined successfully" });
+        if (socket) {
+          socket.emit("kyc-rejected", kycItem.user);
+        }
         fetchKycData();
       } else {
         console.error("Error declining KYC:", response.data.detail);

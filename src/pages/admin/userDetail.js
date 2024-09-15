@@ -641,6 +641,9 @@ const UserDetail = () => {
           message: response.data.detail || "User blocked successfully",
           severity: "success",
         });
+        if(socket){
+          socket.emit("user-block", userId);
+        }
       } else {
         setSnackbar({
           open: true,
