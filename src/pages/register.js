@@ -77,8 +77,14 @@ const Register = () => {
 
   const validateForm = () => {
     let tempErrors = {};
-    if (touched.username && !formData.username)
-      tempErrors.username = "Username is required";
+    if (touched.username) {
+      if (!formData.username) {
+        tempErrors.username = "Username is required";
+      } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+        tempErrors.username =
+          "Username can only contain letters, numbers, and underscores";
+      }
+    }
     if (touched.email) {
       if (!formData.email) {
         tempErrors.email = "Email is required";
