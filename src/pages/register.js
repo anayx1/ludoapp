@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -41,42 +41,6 @@ const Register = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const checkAuthentication = useCallback(() => {
-    console.log("Checking authentication...");
-    try {
-      const userDataCookie = Cookies.get("userData");
-      console.log("UserData cookie:", userDataCookie);
-
-      if (!userDataCookie) {
-        console.log("No userData cookie found");
-        return;
-      }
-
-      const userData = JSON.parse(decodeURIComponent(userDataCookie));
-      console.log("Parsed userData:", userData);
-
-      if (
-        userData &&
-        (userData.token || (userData.user_details && userData.user_details.id))
-      ) {
-        console.log("User is authenticated, redirecting...");
-        router.push("/");
-      } else {
-        console.log("User is not authenticated");
-      }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      Cookies.remove("userData");
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      console.log("Window object is available, running authentication check");
-      checkAuthentication();
-    }
-  }, [checkAuthentication]);
-
   useEffect(() => {
     validateForm();
   }, [formData, verified, touched]);
@@ -86,30 +50,26 @@ const Register = () => {
       setFormData((prev) => ({ ...prev, referral_code: router.query.ref }));
     }
   }, [router.isReady, router.query]);
-  // useEffect(() => {
-  //   const checkAuthentication = () => {
-  //     try {
-  //       const userDataCookie = Cookies.get("userData");
-  //       if (!userDataCookie) return;
+useEffect(() => {
+  const checkAuthentication = () => {
+    try {
+      const userDataCookie = Cookies.get("userData");
+      if (!userDataCookie) return;
 
-  //       const userData = JSON.parse(decodeURIComponent(userDataCookie));
+      const userData = JSON.parse(decodeURIComponent(userDataCookie));
+      
+      if (userData && (userData.token || (userData.user_details && userData.user_details.id))) {
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      // Optionally, clear the invalid cookie
+      Cookies.remove("userData");
+    }
+  };
 
-  //       if (
-  //         userData &&
-  //         (userData.token ||
-  //           (userData.user_details && userData.user_details.id))
-  //       ) {
-  //         router.push("/");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking authentication:", error);
-  //       // Optionally, clear the invalid cookie
-  //       Cookies.remove("userData");
-  //     }
-  //   };
-
-  //   checkAuthentication();
-  // }, [router]);
+  checkAuthentication();
+}, [router]);
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
