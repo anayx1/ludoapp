@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -14,7 +14,6 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useSocketContext } from "@/context/SocketProvider";
-
 const LoginFormAdmin = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -22,7 +21,7 @@ const LoginFormAdmin = () => {
     password: "",
   });
 
-  const {loadAndUpdateUserData} = useSocketContext();
+  const { loadAndUpdateUserData } = useSocketContext();
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -42,7 +41,12 @@ const LoginFormAdmin = () => {
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
-
+  useEffect(() => {
+    // Clear cookies and session storage on component mount
+    Cookies.remove("userData");
+    sessionStorage.clear();
+    console.log("Cookies and session storage cleared");
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
@@ -65,7 +69,7 @@ const LoginFormAdmin = () => {
 
           const userData = JSON.stringify(response.data);
           Cookies.set("userData", userData, { expires: 7 }); // Expires in 7 days
-          
+
           // Log cookie data
           const cookieData = Cookies.get("userData");
           const decodedCookieData = cookieData
