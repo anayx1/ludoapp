@@ -50,23 +50,26 @@ const Register = () => {
       setFormData((prev) => ({ ...prev, referral_code: router.query.ref }));
     }
   }, [router.isReady, router.query]);
-  useEffect(() => {
-    // Check for authentication
-    const userDataCookie = Cookies.get("userData");
-    if (userDataCookie) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(userDataCookie));
-        if (
-          userData.token ||
-          (userData.user_details && userData.user_details.id)
-        ) {
-          router.push("/");
-        }
-      } catch (error) {
-        console.error("Error parsing userData cookie:", error);
+useEffect(() => {
+  const checkAuthentication = () => {
+    try {
+      const userDataCookie = Cookies.get("userData");
+      if (!userDataCookie) return;
+
+      const userData = JSON.parse(decodeURIComponent(userDataCookie));
+      
+      if (userData && (userData.token || (userData.user_details && userData.user_details.id))) {
+        router.push("/");
       }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      // Optionally, clear the invalid cookie
+      Cookies.remove("userData");
     }
-  }, []);
+  };
+
+  checkAuthentication();
+}, [router]);
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
