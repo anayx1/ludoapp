@@ -20,7 +20,7 @@ const Profile = () => {
   const [openModal, setOpenModal] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const router = useRouter();
-  const {userData} = useSocketContext();
+  const {userData, setUserData} = useSocketContext();
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("userData");
