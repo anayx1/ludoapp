@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import Router from "next/router";
 
 const Wallet = () => {
-  const {userData} = useSocketContext();
+  const { userData } = useSocketContext();
 
   const user_details = userData?.user_details || {};
   const token = userData?.token;
@@ -16,6 +16,15 @@ const Wallet = () => {
   const Withdraw = () => {
     Router.push("/withdraw");
   };
+
+  // const nonWithdrawableBalance =
+  //   (user_details?.wallet?.balance ?? 0) -
+  //   (user_details?.wallet?.withdrawable_balance ?? 0);
+  // const adjustedWithdrawableBalance = Math.max(
+  //   (user_details?.wallet?.withdrawable_balance ?? 0) +
+  //     Math.min(nonWithdrawableBalance, 0),
+  //   0
+  // );
 
   return (
     <section
@@ -69,12 +78,7 @@ const Wallet = () => {
               </span>
             </div>
             <div style={{ fontSize: "20px" }}>
-              <b>
-                {" "}
-                ₹{" "}
-                {(user_details?.wallet?.balance -
-                  user_details?.wallet?.withdrawable_balance) || 0}
-              </b>
+              <b> ₹ {user_details?.wallet?.deposit_balance}</b>
             </div>
             <div style={{ width: "100%" }}>
               <Button
@@ -120,7 +124,7 @@ const Wallet = () => {
               </span>
             </div>
             <div style={{ fontSize: "20px" }}>
-              <b> ₹ {user_details?.wallet?.withdrawable_balance || 0}</b>
+            <b> ₹ {user_details?.wallet?.withdrawable_balance}</b>
             </div>
             <div style={{ width: "100%" }}>
               <Button

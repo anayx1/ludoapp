@@ -641,7 +641,7 @@ const UserDetail = () => {
           message: response.data.detail || "User blocked successfully",
           severity: "success",
         });
-        if(socket){
+        if (socket) {
           socket.emit("user-block", userId);
         }
       } else {
@@ -810,16 +810,10 @@ const UserDetail = () => {
               <DetailLine label="Mobile" value={userDetails.phone_number} />
               <DetailLine
                 label="Win"
-                value={userDetails.wallet.withdrawable_balance}
+                value={userDetails.withdrawable_balance}
               />
               {console.log(userDetails)}
-              <DetailLine
-                label="Cash"
-                value={
-                  userDetails.wallet.balance -
-                  userDetails.wallet.withdrawable_balance
-                }
-              />
+              <DetailLine label="Cash" value={userDetails.deposit_balance} />
               <DetailLine
                 label="Total Balance"
                 value={userDetails.wallet.balance}

@@ -9,7 +9,6 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Cookies from "js-cookie";
