@@ -28,6 +28,7 @@ import dayjs from "dayjs";
 import Sidebar from "@/components/admin/AdminSidebar";
 import dynamic from "next/dynamic";
 import { io } from "socket.io-client";
+import { useSocketContext } from "@/context/SocketProvider";
 
 // Dynamically import the Loader component, disabling SSR
 const Loader = dynamic(() => import("@/components/Loader"), {
@@ -426,7 +427,7 @@ const UserDetail = () => {
   const [winningChallange, setWinningChallange] = useState();
   const [winningChallangeData, setWinningChallangeData] = useState();
   const [selectedChallenge, setSelectedChallenge] = useState(null);
-
+  const {socket} = useSocketContext();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -434,33 +435,6 @@ const UserDetail = () => {
   });
   const router = useRouter();
   const { id } = router.query;
-
-  const [socket, setSocket] = useState(null);
-
-  const setSocketIo = () => {
-    const socketIo = io("https://socket.aoneludo.com");
-    setSocket(socketIo);
-    if (socketIo.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      socketIo.emit("user-joined", "admin");
-
-      socketIo.on("update-stats", () => {
-        fetchChallenges(false);
-      });
-    }
-
-    function onDisconnect() {}
-
-    socketIo.on("connect", onConnect);
-    socketIo.on("disconnect", onDisconnect);
-  };
-
-  useEffect(() => {
-    setSocketIo();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
