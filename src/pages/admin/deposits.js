@@ -284,7 +284,7 @@ const DepositComponent = () => {
           <TableCell>{index + 1}</TableCell>
           <TableCell>
             <span
-              onClick={() => handleViewDetails(item.wallet.user.id)}
+              onClick={() => handleViewDetails(item.wallet?.user?.id)}
               style={{
                 cursor: "pointer",
                 color: "blue",
