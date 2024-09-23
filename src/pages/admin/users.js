@@ -109,7 +109,7 @@ const UserComponent = () => {
                       </TableCell>
                       <TableCell>{user.phone_number}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.name || "-"}</TableCell>
+                      <TableCell>{user.kyc_full_name || "-"}</TableCell>
                       <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                       <TableCell>{user.kyc ? "Yes" : "No"}</TableCell>
                       <TableCell>

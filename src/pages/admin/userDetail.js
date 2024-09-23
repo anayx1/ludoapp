@@ -427,7 +427,7 @@ const UserDetail = () => {
   const [winningChallange, setWinningChallange] = useState();
   const [winningChallangeData, setWinningChallangeData] = useState();
   const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const {socket} = useSocketContext();
+  const { socket } = useSocketContext();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -784,10 +784,12 @@ const UserDetail = () => {
               <DetailLine label="Mobile" value={userDetails.phone_number} />
               <DetailLine
                 label="Win"
-                value={userDetails.withdrawable_balance}
+                value={userDetails?.wallet?.withdrawable_balance}
               />
-              {console.log(userDetails)}
-              <DetailLine label="Cash" value={userDetails.deposit_balance} />
+              <DetailLine
+                label="Cash"
+                value={userDetails?.wallet?.deposit_balance}
+              />
               <DetailLine
                 label="Total Balance"
                 value={userDetails.wallet.balance}
