@@ -187,10 +187,10 @@ const BattleModal = ({ isOpen, onClose, selectedChallenge }) => {
               {selectedChallenge.status === "O"
                 ? "Open"
                 : selectedChallenge.status === "R"
-                ? "Running"
-                : selectedChallenge.status === "C"
-                ? "Closed"
-                : "Pending"}
+                  ? "Running"
+                  : selectedChallenge.status === "C"
+                    ? "Closed"
+                    : "Pending"}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -232,8 +232,8 @@ const BattleModal = ({ isOpen, onClose, selectedChallenge }) => {
             <Typography>
               {selectedChallenge.room_result?.timestamp
                 ? dayjs(selectedChallenge.room_result.timestamp).format(
-                    "MM/DD/YYYY hh:mm:ss A"
-                  )
+                  "MM/DD/YYYY hh:mm:ss A"
+                )
                 : "-"}
             </Typography>
           </Grid>
@@ -452,6 +452,7 @@ const UserDetail = () => {
           ]);
 
         setUserDetails(userResponse.data.user_details);
+        console.log(userResponse.data.user_details);
 
         // Merge and process wallet history
         const mergedHistory = processWalletHistory(
@@ -460,7 +461,9 @@ const UserDetail = () => {
           historyResponse.data.penalty_history,
           historyResponse.data.withdrawal_history
         );
+        // console.log('fsdfsdfd', mergedHistory)
         setWalletHistory(mergedHistory);
+
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to fetch user details and history. Please try again.");
@@ -552,7 +555,7 @@ const UserDetail = () => {
       const amount = parseFloat(item.deposit_amount);
 
       // Update balance based on operator if closing_balance is not available
-      if (item.closing_balance === undefined || item.closing_balance === null) {
+      if (item.closing_balance === undefined || item.closing_balance === null || item.closing_balance === "") {
         if (operator === "+") {
           balance += amount;
         } else {
@@ -569,7 +572,7 @@ const UserDetail = () => {
         amount: amount,
         win: item.tag === "Winning" ? amount : 0,
         operator: operator,
-        closing: item.closing_balance.toFixed(2),
+        closing: Number(item?.closing_balance || 0).toFixed(2),
       };
     });
   };
@@ -949,8 +952,8 @@ const UserDetail = () => {
                           item.tag === "Winning"
                             ? "rgba(0, 255, 0, 0.1)"
                             : item.tag === "Lost"
-                            ? "rgba(255, 0, 0, 0.1)"
-                            : "inherit",
+                              ? "rgba(255, 0, 0, 0.1)"
+                              : "inherit",
                       }}
                       onClick={() => {
                         if (!["Winning", "Lost"].includes(item.tag)) return;
@@ -965,8 +968,8 @@ const UserDetail = () => {
                             item.tag === "Winning"
                               ? "green"
                               : item.tag === "Lost"
-                              ? "red"
-                              : "black",
+                                ? "red"
+                                : "black",
                         }}
                       >
                         {item.tag}

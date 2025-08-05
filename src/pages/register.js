@@ -50,26 +50,26 @@ const Register = () => {
       setFormData((prev) => ({ ...prev, referral_code: router.query.ref }));
     }
   }, [router.isReady, router.query]);
-useEffect(() => {
-  const checkAuthentication = () => {
-    try {
-      const userDataCookie = Cookies.get("userData");
-      if (!userDataCookie) return;
+  useEffect(() => {
+    const checkAuthentication = () => {
+      try {
+        const userDataCookie = Cookies.get("userData");
+        if (!userDataCookie) return;
 
-      const userData = JSON.parse(decodeURIComponent(userDataCookie));
-      
-      if (userData && (userData.token || (userData.user_details && userData.user_details.id))) {
-        router.push("/");
+        const userData = JSON.parse(decodeURIComponent(userDataCookie));
+
+        if (userData && (userData.token || (userData.user_details && userData.user_details.id))) {
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        // Optionally, clear the invalid cookie
+        Cookies.remove("userData");
       }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      // Optionally, clear the invalid cookie
-      Cookies.remove("userData");
-    }
-  };
+    };
 
-  checkAuthentication();
-}, [router]);
+    checkAuthentication();
+  }, [router]);
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -138,27 +138,15 @@ useEffect(() => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        "https://auth.otpless.app/auth/otp/v1/send",
-        {
-          phoneNumber: "91" + formData.phone_number,
-          otpLength: 4,
-          channel: "SMS",
-          expiry: 600,
-        },
-        {
-          headers: {
-            clientId: "Y4D9B1YUZYDCPKGOMTPZDQ0HG2G3B2O4",
-            clientSecret: "t4ao18a5e5srd3n1737daujd4ldrh3rx",
-            "Content-Type": "application/json",
-          },
-        }
+      const apiKey = "7e6c9f8f-5bec-11f0-a562-0200cd936042"; // replace with your actual API key
+      const response = await axios.get(
+        `https://2factor.in/API/V1/${apiKey}/SMS/+91${formData.phone_number}/AUTOGEN3/OTP1`
       );
 
-      if (response.status === 200) {
+      if (response.data.Status === "Success") {
         setOtpSent(true);
         setOtpMessage("OTP sent successfully");
-        setSentOtp(response.data.orderId);
+        setSentOtp(response.data.Details); // Store session ID
       } else {
         setOtpMessage("Failed to send OTP");
       }
@@ -170,13 +158,14 @@ useEffect(() => {
     }
   };
 
+
   const handleVerifyOtp = async () => {
     setTouched((prevTouched) => ({ ...prevTouched, otp: true }));
 
-    if (otp.length !== 4 || !sentOtp) {
+    if (otp.length !== 4) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        otp: "Invalid OTP or Order ID",
+        otp: "Please enter 4-digit OTP",
       }));
       setOtpMessage("OTP verification failed");
       return;
@@ -184,30 +173,19 @@ useEffect(() => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        "https://auth.otpless.app/auth/otp/v1/verify",
-        {
-          orderId: sentOtp,
-          otp: otp,
-          phoneNumber: "91" + formData.phone_number,
-        },
-        {
-          headers: {
-            clientId: "Y4D9B1YUZYDCPKGOMTPZDQ0HG2G3B2O4",
-            clientSecret: "t4ao18a5e5srd3n1737daujd4ldrh3rx",
-            "Content-Type": "application/json",
-          },
-        }
+      const apiKey = "7e6c9f8f-5bec-11f0-a562-0200cd936042"; // replace with your actual API key
+      const response = await axios.get(
+        `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY3/91${formData.phone_number}/${otp}`
       );
 
-      if (response.data.isOTPVerified) {
+      if (response.data.Status === "Success" && response.data.Details === "OTP Matched") {
         setVerified(true);
         setErrors((prevErrors) => ({ ...prevErrors, otp: "" }));
         setOtpMessage("OTP verified successfully");
       } else {
         setErrors((prevErrors) => ({
           ...prevErrors,
-          otp: response.data.reason || "Invalid OTP",
+          otp: response.data.Details || "Invalid OTP",
         }));
         setOtpMessage("OTP verification failed");
       }

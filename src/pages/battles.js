@@ -114,12 +114,12 @@ const CreateBattle = () => {
           (a, b) => {
             const aInvolvement =
               a.created_by.id === currentUserId ||
-              a.opponent?.id === currentUserId
+                a.opponent?.id === currentUserId
                 ? 1
                 : 0;
             const bInvolvement =
               b.created_by.id === currentUserId ||
-              b.opponent?.id === currentUserId
+                b.opponent?.id === currentUserId
                 ? 1
                 : 0;
             return bInvolvement - aInvolvement;
@@ -131,12 +131,12 @@ const CreateBattle = () => {
           (a, b) => {
             const aInvolvement =
               a.created_by.id === currentUserId ||
-              a.opponent?.id === currentUserId
+                a.opponent?.id === currentUserId
                 ? 1
                 : 0;
             const bInvolvement =
               b.created_by.id === currentUserId ||
-              b.opponent?.id === currentUserId
+                b.opponent?.id === currentUserId
                 ? 1
                 : 0;
             return bInvolvement - aInvolvement;
@@ -216,7 +216,7 @@ const CreateBattle = () => {
 
   const isValidAmount = (value) => {
     const numValue = Number(value);
-    return numValue >= 50 && numValue <= 15000 && numValue % 50 === 0;
+    return numValue >= 50 && numValue <= 100000 && numValue % 50 === 0;
   };
 
   const handleAmountChange = (event) => {
@@ -239,8 +239,9 @@ const CreateBattle = () => {
 
     if (!isValidAmount(amountNum)) {
       setErrorMessage(
-        "Please enter an amount between 50 and 15000 in multiples of 50. Ex- 50,200,550"
+        "Please enter an amount between 50 and 100000 in multiples of 50. Ex- 50,200,550\nकृपया 50 से 100000 के बीच की राशि दर्ज करें, जो 50 के गुणज में हो। उदाहरण - 50, 200, 550"
       );
+
       setIsErrorModalOpen(true);
       return;
     }
@@ -257,7 +258,15 @@ const CreateBattle = () => {
       setIsErrorModalOpen(true);
       return;
     }
+    const userHasOpenBattle = openBattles.some(
+      battle => battle.created_by.id === currentUserId
+    );
 
+    if (userHasOpenBattle) {
+      setErrorMessage("You can only create one battle at a time. Please wait for your current battle to be joined or cancel it first.\nआप एक बार में केवल एक ही युद्ध बना सकते हैं। कृपया अपने वर्तमान युद्ध में शामिल होने की प्रतीक्षा करें या पहले उसे रद्द करें।");
+      setIsErrorModalOpen(true);
+      return;
+    }
     try {
       setBtnLoading(true);
       const response = await fetch(
@@ -965,10 +974,10 @@ const CreateBattle = () => {
                   MozAppearance: "textfield",
                 },
                 "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                  {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
+                {
+                  WebkitAppearance: "none",
+                  margin: 0,
+                },
               }}
             />
             <Button
